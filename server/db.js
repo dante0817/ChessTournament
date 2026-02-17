@@ -1,14 +1,13 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createClient } from '@libsql/client';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// On Render, use the mounted disk at /data; locally fall back to project root
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'registrations.db');
+const client = createClient({
+  // Locally: uses a local SQLite file (no Turso account needed)
+  // Production: set TURSO_DATABASE_URL + TURSO_AUTH_TOKEN env vars
+  url: process.env.TURSO_DATABASE_URL || 'file:registrations.db',
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-const db = new Database(DB_PATH);
-
-db.exec(`
+await client.execute(`
   CREATE TABLE IF NOT EXISTS registrations (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     team_name   TEXT    NOT NULL,
@@ -21,8 +20,9 @@ db.exec(`
   )
 `);
 
-export const getRegistrationCount = () => {
-  return db.prepare('SELECT COUNT(*) as count FROM registrations').get().count;
+export const getRegistrationCount = async () => {
+  const result = await client.execute('SELECT COUNT(*) as count FROM registrations');
+  return Number(result.rows[0].count);
 };
 
-export default db;
+export default client;
