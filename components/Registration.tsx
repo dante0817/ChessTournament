@@ -17,6 +17,21 @@ const Registration: React.FC = () => {
   const [submitResult, setSubmitResult] = useState<{ slotsRemaining: number } | null>(null);
   const [serverError, setServerError] = useState('');
 
+  const MAX_AVE = 1975;
+  const RATING_FLOOR = 1800;
+
+  const normalizeRating = (val: string): number => {
+    const n = Number(val);
+    if (!val.trim() || isNaN(n) || n <= 0) return RATING_FLOOR;
+    return n < RATING_FLOOR ? RATING_FLOOR : n;
+  };
+
+  const norm1 = normalizeRating(formData.rating1);
+  const norm2 = normalizeRating(formData.rating2);
+  const teamAverage = (norm1 + norm2) / 2;
+  const bothRatingsEntered = formData.rating1.trim() !== '' && formData.rating2.trim() !== '';
+  const isEligible = teamAverage <= MAX_AVE;
+
   const validateField = (name: string, value: string): string => {
     if (!value.trim()) return 'This field is required';
     if (name === 'mobile' && !/^(\+63|0)9\d{9}$/.test(value.replace(/\s/g, ''))) {
@@ -189,6 +204,34 @@ const Registration: React.FC = () => {
                     ))}
                   </div>
 
+                  {/* Team Average Eligibility */}
+                  {bothRatingsEntered && (
+                    <div className={`rounded-lg p-4 border ${isEligible ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Team Average Rating</span>
+                        {isEligible
+                          ? <CheckCircle className="h-5 w-5 text-green-400" />
+                          : <AlertCircle className="h-5 w-5 text-red-400" />
+                        }
+                      </div>
+                      <div className="flex items-baseline gap-3">
+                        <span className={`font-display text-3xl font-bold ${isEligible ? 'text-green-400' : 'text-red-400'}`}>
+                          {teamAverage.toFixed(1)}
+                        </span>
+                        <span className="text-gray-500 text-sm">/ {MAX_AVE} max</span>
+                      </div>
+                      <div className="mt-2 flex gap-4 text-xs text-gray-500">
+                        <span>P1: {norm1} {Number(formData.rating1) < RATING_FLOOR ? '(floor applied)' : ''}</span>
+                        <span>P2: {norm2} {Number(formData.rating2) < RATING_FLOOR ? '(floor applied)' : ''}</span>
+                      </div>
+                      {!isEligible && (
+                        <p className="text-red-400 text-xs mt-2 font-bold">
+                          Team average exceeds {MAX_AVE}. This team is not eligible to register.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Mobile */}
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1" htmlFor="mobile">Contact Number *</label>
@@ -214,7 +257,7 @@ const Registration: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (bothRatingsEntered && !isEligible)}
                     className="w-full bg-chess-gold hover:bg-yellow-400 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
                   >
                     <Send className="h-4 w-4" />
