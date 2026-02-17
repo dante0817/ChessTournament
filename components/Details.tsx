@@ -77,7 +77,7 @@ const Details: React.FC = () => {
                <div className="h-72">
                  <iframe
                    title="Wellcome Plaza Mall Location"
-                   src="https://www.openstreetmap.org/export/embed.html?bbox=120.9875%2C14.5410%2C120.9925%2C14.5450&layer=mapnik&marker=14.5430%2C120.9900"
+                   src="https://www.openstreetmap.org/export/embed.html?bbox=120.9877%2C14.5393%2C120.9917%2C14.5433&layer=mapnik&marker=14.5413%2C120.9897"
                    width="100%"
                    height="100%"
                    style={{ border: 0 }}
