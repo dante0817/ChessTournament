@@ -74,16 +74,17 @@ const Details: React.FC = () => {
             </h2>
 
             <div className="bg-chess-charcoal rounded-xl overflow-hidden shadow-lg border border-gray-800">
-               {/* Placeholder for map - using an image or just a styled div */}
-               <div className="h-64 bg-gray-800 flex items-center justify-center relative">
-                  <img 
-                    src="https://images.unsplash.com/photo-1549646536-1c05561a0678?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" 
-                    alt="Mall Interior"
-                    className="w-full h-full object-cover opacity-50" 
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                     <MapPinLarge />
-                  </div>
+               <div className="h-72">
+                 <iframe
+                   title="Wellcome Plaza Mall Location"
+                   src="https://www.google.com/maps?q=Wellcome+Plaza+Mall,+Libertad,+Pasay+City,+Metro+Manila&output=embed"
+                   width="100%"
+                   height="100%"
+                   style={{ border: 0 }}
+                   allowFullScreen
+                   loading="lazy"
+                   referrerPolicy="no-referrer-when-downgrade"
+                 />
                </div>
                <div className="p-6">
                  <div className="flex items-center gap-3 mb-2">
@@ -92,6 +93,15 @@ const Details: React.FC = () => {
                  </div>
                  <p className="text-gray-400 ml-9">LRT 1 Libertad, Pasay City</p>
                  <p className="text-gray-500 ml-9 text-sm mt-2">Level 2, Activity Center</p>
+                 <a
+                   href="https://www.google.com/maps/search/Wellcome+Plaza+Mall,+Libertad,+Pasay+City"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="ml-9 mt-3 inline-flex items-center gap-1 text-chess-gold text-sm hover:underline"
+                 >
+                   <Map className="h-3.5 w-3.5" />
+                   Open in Google Maps
+                 </a>
                </div>
             </div>
 
