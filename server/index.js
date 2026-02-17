@@ -56,6 +56,16 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ success: true, slotsRemaining });
 });
 
+// GET /api/registrations?key=SECRET — view all registered teams
+app.get('/api/registrations', async (req, res) => {
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || req.query.key !== adminKey) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
+  const result = await client.execute('SELECT * FROM registrations ORDER BY created_at DESC');
+  res.json({ total: result.rows.length, teams: result.rows });
+});
+
 // SPA fallback — must be after API routes
 if (!isDev) {
   app.get('/{*path}', (_req, res) => {
