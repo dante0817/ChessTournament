@@ -77,13 +77,12 @@ const Details: React.FC = () => {
                <div className="h-72">
                  <iframe
                    title="Wellcome Plaza Mall Location"
-                   src="https://www.google.com/maps?q=Wellcome+Plaza+Mall,+Libertad,+Pasay+City,+Metro+Manila&output=embed"
+                   src="https://www.openstreetmap.org/export/embed.html?bbox=120.9875%2C14.5410%2C120.9925%2C14.5450&layer=mapnik&marker=14.5430%2C120.9900"
                    width="100%"
                    height="100%"
                    style={{ border: 0 }}
                    allowFullScreen
                    loading="lazy"
-                   referrerPolicy="no-referrer-when-downgrade"
                  />
                </div>
                <div className="p-6">
@@ -94,7 +93,7 @@ const Details: React.FC = () => {
                  <p className="text-gray-400 ml-9">LRT 1 Libertad, Pasay City</p>
                  <p className="text-gray-500 ml-9 text-sm mt-2">Level 2, Activity Center</p>
                  <a
-                   href="https://www.google.com/maps/search/Wellcome+Plaza+Mall,+Libertad,+Pasay+City"
+                   href="https://www.google.com/maps/search/?api=1&query=Wellcome+Plaza+Mall+Libertad+Pasay+City+Metro+Manila"
                    target="_blank"
                    rel="noopener noreferrer"
                    className="ml-9 mt-3 inline-flex items-center gap-1 text-chess-gold text-sm hover:underline"
