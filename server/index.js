@@ -58,7 +58,7 @@ app.post('/api/register', async (req, res) => {
 
 // SPA fallback — must be after API routes
 if (!isDev) {
-  app.get('*', (_req, res) => {
+  app.get('/{*path}', (_req, res) => {
     res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
   });
 }
