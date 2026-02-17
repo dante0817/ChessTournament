@@ -258,15 +258,23 @@ const Registration: React.FC = () => {
 
             <h3 className="font-display text-2xl font-bold text-white mb-8">PAYMENT CHANNEL</h3>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 mb-8 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-8 border border-white/20">
+              {/* InstaPay QR Code */}
               <div className="flex justify-center mb-4">
-                <div className="bg-blue-600 p-4 rounded-full">
-                  <Phone className="h-8 w-8 text-white" />
-                </div>
+                <img
+                  src="/instapay-qr.png"
+                  alt="InstaPay QR Code"
+                  className="w-48 h-48 rounded-lg object-contain bg-white p-1"
+                />
               </div>
-              <p className="text-blue-200 text-sm font-bold tracking-widest uppercase mb-1">GCASH NUMBER</p>
-              <p className="font-display text-4xl md:text-5xl font-bold text-white tracking-widest mb-2">0956 358 9090</p>
-              <p className="font-display text-xl text-blue-200">DANTE SONEJA</p>
+              <p className="text-blue-300 text-xs font-bold tracking-widest uppercase mb-4">Or pay via GCash number</p>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="bg-blue-600 p-2 rounded-full">
+                  <Phone className="h-5 w-5 text-white" />
+                </div>
+                <p className="font-display text-3xl md:text-4xl font-bold text-white tracking-widest">0956 358 9090</p>
+              </div>
+              <p className="font-display text-lg text-blue-200">DANTE SONEJA</p>
             </div>
 
             <p className="text-blue-200 text-sm mb-6">
