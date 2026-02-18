@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Phone, AlertCircle, Mail, ArrowDown, User, Users, Send, CheckCircle, Star } from 'lucide-react';
+import { CreditCard, Phone, AlertCircle, Mail, ArrowDown, User, Users, Send, CheckCircle, Star, MessageCircle } from 'lucide-react';
 import { submitRegistration } from '../services/api';
 
 const Registration: React.FC = () => {
@@ -281,6 +281,16 @@ const Registration: React.FC = () => {
                       {submitResult.slotsRemaining} slot{submitResult.slotsRemaining !== 1 ? 's' : ''} remaining
                     </p>
                   )}
+                  <a
+                    href="FB_GC_INVITE_LINK_HERE"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-all text-sm mb-4"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Join the Tournament GC
+                  </a>
+                  <p className="text-gray-500 text-xs mb-4">Join for updates, pairings & announcements</p>
                   <button
                     onClick={() => {
                       setSubmitResult(null);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, Facebook, Twitter, Linkedin, Share2, Check } from 'lucide-react';
+import { Calendar, MapPin, Users, Facebook, Twitter, Linkedin, Share2, Check, MessageCircle } from 'lucide-react';
 
 const Hero: React.FC = () => {
   const [copied, setCopied] = useState(false);
@@ -54,19 +54,33 @@ const Hero: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <a 
-            href="#registration" 
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          <a
+            href="#registration"
             className="px-8 py-4 bg-chess-red hover:bg-red-700 text-white font-display font-bold text-xl rounded shadow-[0_0_20px_rgba(217,37,37,0.5)] transition-all transform hover:scale-105"
           >
             REGISTER NOW
           </a>
-          <a 
-            href="#details" 
+          <a
+            href="#details"
             className="px-8 py-4 bg-transparent border-2 border-white hover:bg-white hover:text-black text-white font-display font-bold text-xl rounded transition-all"
           >
             VIEW RULES
           </a>
+        </div>
+
+        {/* Facebook Group Chat */}
+        <div className="mb-12">
+          <a
+            href="FB_GC_INVITE_LINK_HERE"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-display font-bold rounded-full transition-all hover:scale-105 shadow-lg"
+          >
+            <MessageCircle className="h-5 w-5" />
+            Join the Tournament GC
+          </a>
+          <p className="text-gray-500 text-xs mt-2">Get updates, announcements & connect with other teams</p>
         </div>
 
         {/* Social Share Section */}
