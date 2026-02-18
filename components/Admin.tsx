@@ -102,7 +102,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const exportCSV = () => {
-    const headers = ['#', 'Team Name', 'Player 1', 'Rating 1', 'Player 2', 'Rating 2', 'Mobile', 'Registered'];
+    const headers = ['#', 'Team Name', 'Player 1', 'Rating 1', 'Player 2', 'Rating 2', 'Ave Rating', 'Mobile', 'Registered'];
     const rows = teams.map((t, i) => [
       i + 1,
       `"${t.team_name}"`,
@@ -110,6 +110,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       t.rating1,
       `"${t.player2}"`,
       t.rating2,
+      ((t.rating1 + t.rating2) / 2).toFixed(1),
       `"${t.mobile}"`,
       `"${new Date(t.created_at).toLocaleString()}"`,
     ]);
@@ -211,6 +212,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <th className="py-3 px-4 text-center">R1</th>
                 <th className="py-3 px-4 text-left">Player 2</th>
                 <th className="py-3 px-4 text-center">R2</th>
+                <th className="py-3 px-4 text-center">Ave</th>
                 <th className="py-3 px-4 text-left">Mobile</th>
                 <th className="py-3 px-4 text-left">Registered</th>
                 <th className="py-3 px-4 text-center">Actions</th>
@@ -259,6 +261,9 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                           className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-16 text-center text-white focus:border-chess-gold focus:outline-none"
                         />
                       </td>
+                      <td className="py-3 px-4 text-center text-yellow-400 font-bold">
+                        {(((editData.rating1 ?? 0) + (editData.rating2 ?? 0)) / 2).toFixed(1)}
+                      </td>
                       <td className="py-3 px-4">
                         <input
                           value={editData.mobile ?? ''}
@@ -288,6 +293,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       <td className="py-3 px-4 text-center text-chess-gold">{team.rating1}</td>
                       <td className="py-3 px-4">{team.player2}</td>
                       <td className="py-3 px-4 text-center text-chess-gold">{team.rating2}</td>
+                      <td className="py-3 px-4 text-center text-yellow-400 font-bold">{((team.rating1 + team.rating2) / 2).toFixed(1)}</td>
                       <td className="py-3 px-4 text-gray-400">{team.mobile}</td>
                       <td className="py-3 px-4 text-gray-500 text-xs">
                         {new Date(team.created_at).toLocaleDateString()}
@@ -308,7 +314,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               ))}
               {teams.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-gray-500">No registrations yet.</td>
+                  <td colSpan={10} className="py-12 text-center text-gray-500">No registrations yet.</td>
                 </tr>
               )}
             </tbody>
