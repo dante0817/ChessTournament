@@ -56,14 +56,58 @@ app.post('/api/register', async (req, res) => {
   res.status(201).json({ success: true, slotsRemaining });
 });
 
-// GET /api/registrations?key=SECRET — view all registered teams
-app.get('/api/registrations', async (req, res) => {
+// Admin auth helper
+const requireAdmin = (req, res) => {
   const adminKey = process.env.ADMIN_KEY;
   if (!adminKey || req.query.key !== adminKey) {
-    return res.status(401).json({ error: 'Unauthorized.' });
+    res.status(401).json({ error: 'Unauthorized.' });
+    return false;
   }
+  return true;
+};
+
+// GET /api/registrations?key=SECRET — view all registered teams
+app.get('/api/registrations', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
   const result = await client.execute('SELECT * FROM registrations ORDER BY created_at DESC');
   res.json({ total: result.rows.length, teams: result.rows });
+});
+
+// PUT /api/registrations/:id?key=SECRET — update a registration
+app.put('/api/registrations/:id', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const { teamName, player1, player2, rating1, rating2, mobile } = req.body;
+  const id = Number(req.params.id);
+
+  if (!teamName?.trim() || !player1?.trim() || !player2?.trim() || !mobile?.trim()) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  const result = await client.execute({
+    sql: `UPDATE registrations SET team_name=?, player1=?, player2=?, rating1=?, rating2=?, mobile=? WHERE id=?`,
+    args: [teamName.trim(), player1.trim(), player2.trim(), Number(rating1), Number(rating2), mobile.trim(), id],
+  });
+
+  if (result.rowsAffected === 0) {
+    return res.status(404).json({ error: 'Registration not found.' });
+  }
+  res.json({ success: true });
+});
+
+// DELETE /api/registrations/:id?key=SECRET — delete a registration
+app.delete('/api/registrations/:id', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  const id = Number(req.params.id);
+
+  const result = await client.execute({
+    sql: 'DELETE FROM registrations WHERE id=?',
+    args: [id],
+  });
+
+  if (result.rowsAffected === 0) {
+    return res.status(404).json({ error: 'Registration not found.' });
+  }
+  res.json({ success: true });
 });
 
 // SPA fallback — must be after API routes
