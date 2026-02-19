@@ -473,6 +473,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                         try {
                           await resetTournament(key);
                           setRoundData(null);
+                          setTournamentStatus(null);
                           fetchTournamentData();
                         } catch (err: unknown) {
                           setTError(err instanceof Error ? err.message : 'Failed to reset tournament.');
