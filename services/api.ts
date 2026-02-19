@@ -41,6 +41,7 @@ export interface TournamentStatus {
   currentRound?: number;
   totalRounds?: number;
   status?: 'open' | 'done';
+  algorithm?: 'swiss' | 'roundrobin' | 'random';
 }
 
 export interface PairingRow {
@@ -94,13 +95,13 @@ export const fetchRound = (n: number) =>
 export const fetchStandings = () =>
   request<{ standings: StandingRow[] }>('/api/tournament/standings');
 
-export const startTournament = (adminKey: string, totalRounds: number) =>
-  request<{ success: boolean; round: number; boards: number }>(
+export const startTournament = (adminKey: string, totalRounds: number, algorithm: string) =>
+  request<{ success: boolean; round: number; boards: number; totalRounds: number; algorithm: string }>(
     `/api/tournament/start?key=${encodeURIComponent(adminKey)}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ totalRounds }),
+      body: JSON.stringify({ totalRounds, algorithm }),
     }
   );
 

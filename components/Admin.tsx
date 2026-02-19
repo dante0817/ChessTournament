@@ -34,6 +34,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [tournamentStatus, setTournamentStatus] = useState<TournamentStatus | null>(null);
   const [roundData, setRoundData] = useState<RoundData | null>(null);
   const [totalRoundsInput, setTotalRoundsInput] = useState('7');
+  const [algorithmInput, setAlgorithmInput] = useState<'swiss' | 'roundrobin' | 'random'>('swiss');
   const [tError, setTError] = useState('');
   const [tLoading, setTLoading] = useState(false);
 
@@ -397,22 +398,40 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Swords className="h-5 w-5 text-chess-gold" /> START TOURNAMENT
                 </h2>
-                <div className="flex items-end gap-4">
+                <div className="flex flex-wrap items-end gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Total Rounds</label>
-                    <input
-                      type="number" min="1" max="20"
-                      value={totalRoundsInput}
-                      onChange={e => setTotalRoundsInput(e.target.value)}
-                      className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white w-24 focus:border-chess-gold focus:outline-none"
-                    />
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Pairing Algorithm</label>
+                    <select
+                      value={algorithmInput}
+                      onChange={e => setAlgorithmInput(e.target.value as typeof algorithmInput)}
+                      className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white focus:border-chess-gold focus:outline-none"
+                    >
+                      <option value="swiss">Swiss (Dutch)</option>
+                      <option value="roundrobin">Round Robin</option>
+                      <option value="random">Random</option>
+                    </select>
                   </div>
+                  {algorithmInput !== 'roundrobin' ? (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Total Rounds</label>
+                      <input
+                        type="number" min="1" max="20"
+                        value={totalRoundsInput}
+                        onChange={e => setTotalRoundsInput(e.target.value)}
+                        className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white w-24 focus:border-chess-gold focus:outline-none"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 pb-2">
+                      Rounds auto-calculated from team count
+                    </p>
+                  )}
                   <button
                     disabled={tLoading}
                     onClick={async () => {
                       setTError('');
                       try {
-                        await startTournament(key, Number(totalRoundsInput));
+                        await startTournament(key, Number(totalRoundsInput), algorithmInput);
                         fetchTournamentData();
                       } catch (err: unknown) {
                         setTError(err instanceof Error ? err.message : 'Failed to start tournament.');
@@ -430,9 +449,14 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             {tournamentStatus?.started && roundData && (
               <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                  <h2 className="font-display text-xl font-bold text-white flex items-center gap-2 flex-wrap">
                     <Swords className="h-5 w-5 text-chess-gold" />
                     ROUND {roundData.round} / {roundData.totalRounds}
+                    {tournamentStatus?.algorithm && (
+                      <span className="text-xs font-normal text-gray-400 bg-gray-700 px-2 py-0.5 rounded">
+                        {{swiss:'Swiss', roundrobin:'Round Robin', random:'Random'}[tournamentStatus.algorithm] ?? tournamentStatus.algorithm}
+                      </span>
+                    )}
                   </h2>
                   <div className="flex gap-3">
                     <button

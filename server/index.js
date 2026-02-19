@@ -3,7 +3,16 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import client, { getRegistrationCount } from './db.js';
-import { generatePairings, computeScore } from './swiss.js';
+import { generatePairings, generateRoundRobinPairings, generateRandomPairings, computeScore } from './swiss.js';
+
+const VALID_ALGORITHMS = ['swiss', 'roundrobin', 'random'];
+
+/** Dispatch to the correct pairing function based on algorithm. */
+function buildPairings(algorithm, teams, prevPairings, roundNum) {
+  if (algorithm === 'roundrobin') return generateRoundRobinPairings(teams, roundNum);
+  if (algorithm === 'random') return generateRandomPairings(teams, prevPairings);
+  return generatePairings(teams, prevPairings);
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -157,6 +166,7 @@ app.get('/api/tournament/status', async (_req, res) => {
     currentRound: round.round_num,
     totalRounds: round.total_rounds,
     status: round.status,
+    algorithm: round.algorithm ?? 'swiss',
   });
 });
 
@@ -164,9 +174,9 @@ app.get('/api/tournament/status', async (_req, res) => {
 app.post('/api/tournament/start', async (req, res) => {
   if (!requireAdmin(req, res)) return;
 
-  const totalRounds = Number(req.body.totalRounds);
-  if (!totalRounds || totalRounds < 1 || totalRounds > 20) {
-    return res.status(400).json({ error: 'totalRounds must be 1–20.' });
+  const algorithm = req.body.algorithm ?? 'swiss';
+  if (!VALID_ALGORITHMS.includes(algorithm)) {
+    return res.status(400).json({ error: `algorithm must be one of: ${VALID_ALGORITHMS.join(', ')}` });
   }
 
   const existing = await client.execute('SELECT COUNT(*) as c FROM rounds');
@@ -182,13 +192,25 @@ app.post('/api/tournament/start', async (req, res) => {
     return res.status(400).json({ error: 'Need at least 2 registered teams to start.' });
   }
 
+  // Round Robin: auto-calculate total rounds (N-1 for even, N for odd)
+  let totalRounds;
+  if (algorithm === 'roundrobin') {
+    const n = teams.length;
+    totalRounds = n % 2 === 0 ? n - 1 : n;
+  } else {
+    totalRounds = Number(req.body.totalRounds);
+    if (!totalRounds || totalRounds < 1 || totalRounds > 20) {
+      return res.status(400).json({ error: 'totalRounds must be 1–20.' });
+    }
+  }
+
   const roundResult = await client.execute({
-    sql: 'INSERT INTO rounds (round_num, total_rounds, status) VALUES (?, ?, ?)',
-    args: [1, totalRounds, 'open'],
+    sql: 'INSERT INTO rounds (round_num, total_rounds, status, algorithm) VALUES (?, ?, ?, ?)',
+    args: [1, totalRounds, 'open', algorithm],
   });
   const roundId = roundResult.lastInsertRowid;
 
-  const pairings = generatePairings(teams, []);
+  const pairings = buildPairings(algorithm, teams, [], 1);
   for (const p of pairings) {
     await client.execute({
       sql: 'INSERT INTO pairings (round_id, board_num, team1_id, team2_id, color1, result) VALUES (?, ?, ?, ?, ?, ?)',
@@ -196,7 +218,7 @@ app.post('/api/tournament/start', async (req, res) => {
     });
   }
 
-  res.status(201).json({ success: true, round: 1, boards: pairings.length });
+  res.status(201).json({ success: true, round: 1, boards: pairings.length, totalRounds, algorithm });
 });
 
 // POST /api/tournament/rounds/:n/generate?key=SECRET — generate next round
@@ -237,6 +259,8 @@ app.post('/api/tournament/rounds/:n/generate', async (req, res) => {
   }
 
   const totalRounds = prevRound.rows[0].total_rounds;
+  const algorithm = prevRound.rows[0].algorithm ?? 'swiss';
+
   if (n > totalRounds) {
     return res.status(400).json({ error: 'Tournament is already complete.' });
   }
@@ -249,12 +273,12 @@ app.post('/api/tournament/rounds/:n/generate', async (req, res) => {
   );
 
   const roundResult = await client.execute({
-    sql: 'INSERT INTO rounds (round_num, total_rounds, status) VALUES (?, ?, ?)',
-    args: [n, totalRounds, 'open'],
+    sql: 'INSERT INTO rounds (round_num, total_rounds, status, algorithm) VALUES (?, ?, ?, ?)',
+    args: [n, totalRounds, 'open', algorithm],
   });
   const roundId = roundResult.lastInsertRowid;
 
-  const pairings = generatePairings(teamsResult.rows, allPairingsResult.rows);
+  const pairings = buildPairings(algorithm, teamsResult.rows, allPairingsResult.rows, n);
   for (const p of pairings) {
     await client.execute({
       sql: 'INSERT INTO pairings (round_id, board_num, team1_id, team2_id, color1, result) VALUES (?, ?, ?, ?, ?, ?)',

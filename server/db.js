@@ -43,6 +43,13 @@ await client.execute(`
   )
 `);
 
+// Migration: add algorithm column to existing rounds tables
+try {
+  await client.execute("ALTER TABLE rounds ADD COLUMN algorithm TEXT NOT NULL DEFAULT 'swiss'");
+} catch (_) {
+  // Column already exists — safe to ignore
+}
+
 export const getRegistrationCount = async () => {
   const result = await client.execute('SELECT COUNT(*) as count FROM registrations');
   return Number(result.rows[0].count);

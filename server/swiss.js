@@ -72,7 +72,7 @@ function getLastColor(teamId, pairings) {
  * @param {Array} pairings
  * @returns {'W'|'B'} color for team1
  */
-function assignColor(team1Id, team2Id, pairings) {
+export function assignColor(team1Id, team2Id, pairings) {
   const last1 = getLastColor(team1Id, pairings);
   const last2 = getLastColor(team2Id, pairings);
 
@@ -183,6 +183,82 @@ export function generatePairings(teams, prevPairings) {
   // Add bye pairing last
   if (byeTeamId !== null) {
     result.push({ board_num: boardNum, team1_id: byeTeamId, team2_id: null, color1: null });
+  }
+
+  return result;
+}
+
+/**
+ * Generate pairings for a round using the Berger circle (Round Robin) method.
+ * Every team plays every other team exactly once.
+ * Total rounds = N-1 for even N, N for odd N.
+ *
+ * @param {Array} teams - all registered teams: { id, ... }
+ * @param {number} roundNum - 1-indexed round number
+ * @returns {Array} new pairings: { board_num, team1_id, team2_id, color1 }
+ */
+export function generateRoundRobinPairings(teams, roundNum) {
+  const list = [...teams];
+  // If odd number of teams, add a bye sentinel (null)
+  if (list.length % 2 !== 0) list.push(null);
+
+  const n = list.length;
+  const fixed = list[0];               // team at position 0 stays fixed
+  const rotating = list.slice(1);      // the other n-1 teams rotate
+
+  // Rotate by (roundNum - 1) positions
+  const rot = (roundNum - 1) % rotating.length;
+  const rotated = [...rotating.slice(rot), ...rotating.slice(0, rot)];
+  const table = [fixed, ...rotated];
+
+  const result = [];
+  let boardNum = 1;
+
+  for (let i = 0; i < n / 2; i++) {
+    const teamA = table[i];
+    const teamB = table[n - 1 - i];
+
+    if (teamA === null) {
+      result.push({ board_num: boardNum++, team1_id: teamB.id, team2_id: null, color1: null });
+    } else if (teamB === null) {
+      result.push({ board_num: boardNum++, team1_id: teamA.id, team2_id: null, color1: null });
+    } else {
+      // Alternate colors by round + board index so each team gets balanced colors
+      const color1 = (roundNum + i) % 2 === 0 ? 'W' : 'B';
+      result.push({ board_num: boardNum++, team1_id: teamA.id, team2_id: teamB.id, color1 });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Generate random pairings (shuffle teams, pair consecutively).
+ * Useful for casual / warm-up rounds.
+ *
+ * @param {Array} teams - all registered teams
+ * @param {Array} prevPairings - for color assignment history
+ * @returns {Array} new pairings: { board_num, team1_id, team2_id, color1 }
+ */
+export function generateRandomPairings(teams, prevPairings) {
+  // Fisher-Yates shuffle
+  const shuffled = [...teams];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  const result = [];
+  let boardNum = 1;
+
+  for (let i = 0; i < shuffled.length; i += 2) {
+    if (i + 1 >= shuffled.length) {
+      // Odd team out — bye
+      result.push({ board_num: boardNum++, team1_id: shuffled[i].id, team2_id: null, color1: null });
+    } else {
+      const color1 = assignColor(shuffled[i].id, shuffled[i + 1].id, prevPairings);
+      result.push({ board_num: boardNum++, team1_id: shuffled[i].id, team2_id: shuffled[i + 1].id, color1 });
+    }
   }
 
   return result;
