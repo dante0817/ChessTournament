@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Pencil, Save, X, LogIn, Shield, ArrowLeft, Download } from 'lucide-react';
+import { Trash2, Pencil, Save, X, LogIn, Shield, ArrowLeft, Download, Swords } from 'lucide-react';
+import {
+  fetchTournamentStatus,
+  fetchRound,
+  startTournament,
+  generateNextRound,
+  enterResult,
+  TournamentStatus,
+  RoundData,
+} from '../services/api';
 
 interface Registration {
   id: number;
@@ -21,6 +30,29 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editData, setEditData] = useState<Partial<Registration>>({});
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'registrations' | 'tournament'>('registrations');
+  const [tournamentStatus, setTournamentStatus] = useState<TournamentStatus | null>(null);
+  const [roundData, setRoundData] = useState<RoundData | null>(null);
+  const [totalRoundsInput, setTotalRoundsInput] = useState('7');
+  const [tError, setTError] = useState('');
+  const [tLoading, setTLoading] = useState(false);
+
+  const fetchTournamentData = async () => {
+    setTLoading(true);
+    setTError('');
+    try {
+      const s = await fetchTournamentStatus();
+      setTournamentStatus(s);
+      if (s.started && s.currentRound) {
+        const rd = await fetchRound(s.currentRound);
+        setRoundData(rd);
+      }
+    } catch (err: unknown) {
+      setTError(err instanceof Error ? err.message : 'Failed to load tournament data.');
+    } finally {
+      setTLoading(false);
+    }
+  };
 
   const fetchTeams = async (adminKey: string) => {
     setLoading(true);
@@ -32,6 +64,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       setTeams(data.teams);
       setTotal(data.total);
       setAuthenticated(true);
+      fetchTournamentData();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load registrations.');
       setAuthenticated(false);
@@ -170,29 +203,57 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     <div className="min-h-screen bg-chess-dark text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
           <div>
             <h1 className="font-display text-3xl font-bold">
-              <span className="text-chess-gold">REGISTRATIONS</span> ({total})
+              <span className="text-chess-gold">ADMIN</span>
             </h1>
             <button onClick={onBack} className="text-gray-400 hover:text-white text-sm flex items-center gap-1 mt-1">
               <ArrowLeft className="h-3 w-3" /> Back to site
             </button>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={exportCSV}
-              className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
-            >
-              <Download className="h-4 w-4" /> Export CSV
-            </button>
-            <button
-              onClick={() => fetchTeams(key)}
-              className="bg-chess-gold hover:bg-yellow-400 text-black text-sm font-bold py-2 px-4 rounded-lg transition-all"
-            >
-              Refresh
-            </button>
+            {activeTab === 'registrations' && (
+              <>
+                <button
+                  onClick={exportCSV}
+                  className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
+                >
+                  <Download className="h-4 w-4" /> Export CSV
+                </button>
+                <button
+                  onClick={() => fetchTeams(key)}
+                  className="bg-chess-gold hover:bg-yellow-400 text-black text-sm font-bold py-2 px-4 rounded-lg transition-all"
+                >
+                  Refresh
+                </button>
+              </>
+            )}
           </div>
+        </div>
+
+        {/* Tab bar */}
+        <div className="flex gap-2 border-b border-gray-700 mb-6">
+          <button
+            onClick={() => setActiveTab('registrations')}
+            className={`px-4 py-2 font-bold font-display text-sm transition-colors border-b-2 ${
+              activeTab === 'registrations'
+                ? 'border-chess-gold text-chess-gold'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            REGISTRATIONS ({total})
+          </button>
+          <button
+            onClick={() => { setActiveTab('tournament'); fetchTournamentData(); }}
+            className={`px-4 py-2 font-bold font-display text-sm transition-colors border-b-2 flex items-center gap-1 ${
+              activeTab === 'tournament'
+                ? 'border-chess-gold text-chess-gold'
+                : 'border-transparent text-gray-400 hover:text-white'
+            }`}
+          >
+            <Swords className="h-4 w-4" /> TOURNAMENT
+          </button>
         </div>
 
         {error && (
@@ -201,8 +262,8 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </div>
         )}
 
-        {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-gray-700">
+        {/* Registrations table */}
+        {activeTab === 'registrations' && <div className="overflow-x-auto rounded-xl border border-gray-700">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
@@ -319,7 +380,168 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               )}
             </tbody>
           </table>
-        </div>
+        </div>}
+
+        {/* Tournament tab */}
+        {activeTab === 'tournament' && (
+          <div className="space-y-6">
+            {tError && (
+              <div className="bg-red-900/20 border border-red-800 rounded-lg p-3">
+                <p className="text-red-400 text-sm">{tError}</p>
+              </div>
+            )}
+
+            {/* Start tournament */}
+            {!tournamentStatus?.started && (
+              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
+                <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Swords className="h-5 w-5 text-chess-gold" /> START TOURNAMENT
+                </h2>
+                <div className="flex items-end gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Total Rounds</label>
+                    <input
+                      type="number" min="1" max="20"
+                      value={totalRoundsInput}
+                      onChange={e => setTotalRoundsInput(e.target.value)}
+                      className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white w-24 focus:border-chess-gold focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    disabled={tLoading}
+                    onClick={async () => {
+                      setTError('');
+                      try {
+                        await startTournament(key, Number(totalRoundsInput));
+                        fetchTournamentData();
+                      } catch (err: unknown) {
+                        setTError(err instanceof Error ? err.message : 'Failed to start tournament.');
+                      }
+                    }}
+                    className="bg-chess-gold hover:bg-yellow-400 disabled:opacity-60 text-black font-bold py-2 px-6 rounded-lg transition-all"
+                  >
+                    {tLoading ? 'Starting…' : 'Generate Round 1'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Current round result entry */}
+            {tournamentStatus?.started && roundData && (
+              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                    <Swords className="h-5 w-5 text-chess-gold" />
+                    ROUND {roundData.round} / {roundData.totalRounds}
+                  </h2>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => fetchTournamentData()}
+                      className="text-gray-400 hover:text-white text-sm"
+                    >
+                      Refresh
+                    </button>
+                    {roundData.status === 'open' && roundData.round < roundData.totalRounds && (
+                      <button
+                        disabled={tLoading || roundData.pairings.some(p => p.team2_id !== null && p.result === null)}
+                        onClick={async () => {
+                          setTError('');
+                          try {
+                            await generateNextRound(key, roundData.round + 1);
+                            fetchTournamentData();
+                          } catch (err: unknown) {
+                            setTError(err instanceof Error ? err.message : 'Failed to generate next round.');
+                          }
+                        }}
+                        className="bg-chess-gold hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-1.5 px-4 rounded-lg text-sm transition-all"
+                        title="All results must be entered first"
+                      >
+                        Generate Round {roundData.round + 1}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {(() => {
+                  const pending = roundData.pairings.filter(p => p.team2_id !== null && p.result === null).length;
+                  return pending > 0 ? (
+                    <p className="text-yellow-400 text-xs mb-3">{pending} result(s) still pending</p>
+                  ) : null;
+                })()}
+
+                <div className="overflow-x-auto rounded-xl border border-gray-700">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
+                        <th className="py-3 px-4 text-center">Board</th>
+                        <th className="py-3 px-4 text-left">White</th>
+                        <th className="py-3 px-4 text-center">Result</th>
+                        <th className="py-3 px-4 text-left">Black</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roundData.pairings.map(p => {
+                        const isBye = p.team2_id === null;
+                        return (
+                          <tr key={p.id} className="border-t border-gray-800">
+                            <td className="py-3 px-4 text-center text-chess-gold font-bold">{p.board_num}</td>
+                            <td className="py-3 px-4">
+                              <div className="font-bold">{p.color1 === 'W' ? p.team1_name : (p.team2_name ?? '—')}</div>
+                              <div className="text-gray-500 text-xs">
+                                {p.color1 === 'W' ? `${p.t1p1} / ${p.t1p2}` : `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}`}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {isBye ? (
+                                <span className="text-yellow-400 text-xs font-bold">BYE</span>
+                              ) : (
+                                <select
+                                  value={p.result ?? ''}
+                                  onChange={async e => {
+                                    const val = e.target.value;
+                                    if (!val) return;
+                                    setTError('');
+                                    try {
+                                      await enterResult(key, p.id, val);
+                                      fetchTournamentData();
+                                    } catch (err: unknown) {
+                                      setTError(err instanceof Error ? err.message : 'Failed to save result.');
+                                    }
+                                  }}
+                                  className={`bg-gray-900 border rounded px-2 py-1 text-sm focus:outline-none ${
+                                    p.result ? 'border-green-700 text-green-400' : 'border-gray-600 text-gray-400'
+                                  }`}
+                                >
+                                  <option value="">— select —</option>
+                                  <option value="1-0">1-0</option>
+                                  <option value="1/2-1/2">½-½</option>
+                                  <option value="0-1">0-1</option>
+                                </select>
+                              )}
+                            </td>
+                            <td className="py-3 px-4">
+                              {isBye ? (
+                                <span className="text-gray-600 italic text-sm">— bye —</span>
+                              ) : (
+                                <>
+                                  <div className="font-bold">{p.color1 === 'W' ? (p.team2_name ?? '—') : p.team1_name}</div>
+                                  <div className="text-gray-500 text-xs">
+                                    {p.color1 === 'W' ? `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}` : `${p.t1p1} / ${p.t1p2}`}
+                                  </div>
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
   );
