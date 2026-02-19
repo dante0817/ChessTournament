@@ -20,6 +20,29 @@ await client.execute(`
   )
 `);
 
+await client.execute(`
+  CREATE TABLE IF NOT EXISTS rounds (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    round_num    INTEGER NOT NULL,
+    total_rounds INTEGER NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'open',
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+await client.execute(`
+  CREATE TABLE IF NOT EXISTS pairings (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    round_id   INTEGER NOT NULL REFERENCES rounds(id),
+    board_num  INTEGER NOT NULL,
+    team1_id   INTEGER NOT NULL REFERENCES registrations(id),
+    team2_id   INTEGER,
+    color1     TEXT DEFAULT NULL,
+    result     TEXT DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 export const getRegistrationCount = async () => {
   const result = await client.execute('SELECT COUNT(*) as count FROM registrations');
   return Number(result.rows[0].count);
