@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import client, { getRegistrationCount } from './db.js';
+import { generatePairings, computeScore } from './swiss.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -108,6 +109,232 @@ app.delete('/api/registrations/:id', async (req, res) => {
     return res.status(404).json({ error: 'Registration not found.' });
   }
   res.json({ success: true });
+});
+
+// ── Tournament routes ────────────────────────────────────────────────────────
+
+/**
+ * Returns current standings for all teams.
+ */
+async function computeStandings() {
+  const teamsResult = await client.execute(
+    'SELECT * FROM registrations ORDER BY created_at ASC'
+  );
+  const teams = teamsResult.rows;
+
+  const pairingsResult = await client.execute(
+    'SELECT * FROM pairings ORDER BY created_at ASC'
+  );
+  const allPairings = pairingsResult.rows;
+
+  return teams
+    .map(t => ({
+      ...t,
+      score: computeScore(t.id, allPairings),
+      gamesPlayed: allPairings.filter(
+        p => p.result !== null && (p.team1_id === t.id || p.team2_id === t.id)
+      ).length,
+    }))
+    .sort((a, b) =>
+      b.score !== a.score
+        ? b.score - a.score
+        : (b.rating1 + b.rating2) / 2 - (a.rating1 + a.rating2) / 2
+    )
+    .map((t, i) => ({ rank: i + 1, ...t }));
+}
+
+// GET /api/tournament/status — current tournament state (public)
+app.get('/api/tournament/status', async (_req, res) => {
+  const result = await client.execute(
+    'SELECT * FROM rounds ORDER BY round_num DESC LIMIT 1'
+  );
+  if (result.rows.length === 0) {
+    return res.json({ started: false });
+  }
+  const round = result.rows[0];
+  res.json({
+    started: true,
+    currentRound: round.round_num,
+    totalRounds: round.total_rounds,
+    status: round.status,
+  });
+});
+
+// POST /api/tournament/start?key=SECRET — start tournament, generate round 1
+app.post('/api/tournament/start', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const totalRounds = Number(req.body.totalRounds);
+  if (!totalRounds || totalRounds < 1 || totalRounds > 20) {
+    return res.status(400).json({ error: 'totalRounds must be 1–20.' });
+  }
+
+  const existing = await client.execute('SELECT COUNT(*) as c FROM rounds');
+  if (Number(existing.rows[0].c) > 0) {
+    return res.status(409).json({ error: 'Tournament already started.' });
+  }
+
+  const teamsResult = await client.execute(
+    'SELECT * FROM registrations ORDER BY (rating1 + rating2) DESC'
+  );
+  const teams = teamsResult.rows;
+  if (teams.length < 2) {
+    return res.status(400).json({ error: 'Need at least 2 registered teams to start.' });
+  }
+
+  const roundResult = await client.execute({
+    sql: 'INSERT INTO rounds (round_num, total_rounds, status) VALUES (?, ?, ?)',
+    args: [1, totalRounds, 'open'],
+  });
+  const roundId = roundResult.lastInsertRowid;
+
+  const pairings = generatePairings(teams, []);
+  for (const p of pairings) {
+    await client.execute({
+      sql: 'INSERT INTO pairings (round_id, board_num, team1_id, team2_id, color1, result) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [roundId, p.board_num, p.team1_id, p.team2_id, p.color1, p.team2_id === null ? 'bye' : null],
+    });
+  }
+
+  res.status(201).json({ success: true, round: 1, boards: pairings.length });
+});
+
+// POST /api/tournament/rounds/:n/generate?key=SECRET — generate next round
+app.post('/api/tournament/rounds/:n/generate', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const n = Number(req.params.n);
+
+  const prevRound = await client.execute({
+    sql: 'SELECT * FROM rounds WHERE round_num = ?',
+    args: [n - 1],
+  });
+  if (prevRound.rows.length === 0) {
+    return res.status(404).json({ error: `Round ${n - 1} does not exist.` });
+  }
+
+  const pending = await client.execute({
+    sql: 'SELECT COUNT(*) as c FROM pairings WHERE round_id = ? AND result IS NULL',
+    args: [prevRound.rows[0].id],
+  });
+  if (Number(pending.rows[0].c) > 0) {
+    return res.status(409).json({
+      error: `Round ${n - 1} has ${pending.rows[0].c} result(s) still pending.`,
+    });
+  }
+
+  await client.execute({
+    sql: "UPDATE rounds SET status = 'done' WHERE id = ?",
+    args: [prevRound.rows[0].id],
+  });
+
+  const alreadyExists = await client.execute({
+    sql: 'SELECT id FROM rounds WHERE round_num = ?',
+    args: [n],
+  });
+  if (alreadyExists.rows.length > 0) {
+    return res.status(409).json({ error: `Round ${n} already generated.` });
+  }
+
+  const totalRounds = prevRound.rows[0].total_rounds;
+  if (n > totalRounds) {
+    return res.status(400).json({ error: 'Tournament is already complete.' });
+  }
+
+  const teamsResult = await client.execute(
+    'SELECT * FROM registrations ORDER BY (rating1 + rating2) DESC'
+  );
+  const allPairingsResult = await client.execute(
+    'SELECT * FROM pairings ORDER BY created_at ASC'
+  );
+
+  const roundResult = await client.execute({
+    sql: 'INSERT INTO rounds (round_num, total_rounds, status) VALUES (?, ?, ?)',
+    args: [n, totalRounds, 'open'],
+  });
+  const roundId = roundResult.lastInsertRowid;
+
+  const pairings = generatePairings(teamsResult.rows, allPairingsResult.rows);
+  for (const p of pairings) {
+    await client.execute({
+      sql: 'INSERT INTO pairings (round_id, board_num, team1_id, team2_id, color1, result) VALUES (?, ?, ?, ?, ?, ?)',
+      args: [roundId, p.board_num, p.team1_id, p.team2_id, p.color1, p.team2_id === null ? 'bye' : null],
+    });
+  }
+
+  res.status(201).json({ success: true, round: n, boards: pairings.length });
+});
+
+// PUT /api/tournament/pairings/:id/result?key=SECRET — enter a result
+app.put('/api/tournament/pairings/:id/result', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  const id = Number(req.params.id);
+  const { result } = req.body;
+
+  const allowed = ['1-0', '0-1', '1/2-1/2'];
+  if (!allowed.includes(result)) {
+    return res.status(400).json({ error: `result must be one of: ${allowed.join(', ')}` });
+  }
+
+  const pairing = await client.execute({
+    sql: 'SELECT * FROM pairings WHERE id = ?',
+    args: [id],
+  });
+  if (pairing.rows.length === 0) {
+    return res.status(404).json({ error: 'Pairing not found.' });
+  }
+  if (pairing.rows[0].team2_id === null) {
+    return res.status(400).json({ error: 'Cannot enter result for a bye.' });
+  }
+
+  await client.execute({
+    sql: 'UPDATE pairings SET result = ? WHERE id = ?',
+    args: [result, id],
+  });
+
+  res.json({ success: true });
+});
+
+// GET /api/tournament/rounds/:n — pairings for round N (public)
+app.get('/api/tournament/rounds/:n', async (req, res) => {
+  const n = Number(req.params.n);
+
+  const roundResult = await client.execute({
+    sql: 'SELECT * FROM rounds WHERE round_num = ?',
+    args: [n],
+  });
+  if (roundResult.rows.length === 0) {
+    return res.status(404).json({ error: `Round ${n} not found.` });
+  }
+  const round = roundResult.rows[0];
+
+  const pairingsResult = await client.execute({
+    sql: `SELECT p.*,
+            t1.team_name as team1_name, t1.player1 as t1p1, t1.player2 as t1p2,
+            t1.rating1 as t1r1, t1.rating2 as t1r2,
+            t2.team_name as team2_name, t2.player1 as t2p1, t2.player2 as t2p2,
+            t2.rating1 as t2r1, t2.rating2 as t2r2
+          FROM pairings p
+          JOIN registrations t1 ON p.team1_id = t1.id
+          LEFT JOIN registrations t2 ON p.team2_id = t2.id
+          WHERE p.round_id = ?
+          ORDER BY p.board_num ASC`,
+    args: [round.id],
+  });
+
+  res.json({
+    round: round.round_num,
+    totalRounds: round.total_rounds,
+    status: round.status,
+    pairings: pairingsResult.rows,
+  });
+});
+
+// GET /api/tournament/standings — current standings (public)
+app.get('/api/tournament/standings', async (_req, res) => {
+  const standings = await computeStandings();
+  res.json({ standings });
 });
 
 // SPA fallback — must be after API routes
