@@ -8,20 +8,29 @@ import RatingCalculator from './components/RatingCalculator';
 import Registration from './components/Registration';
 import Footer from './components/Footer';
 import Admin from './components/Admin';
+import Pairings from './components/Pairings';
 
 function App() {
-  const [page, setPage] = useState<'home' | 'admin'>(
-    window.location.hash === '#admin' ? 'admin' : 'home'
-  );
+  const getPage = () => {
+    if (window.location.hash === '#admin') return 'admin';
+    if (window.location.hash === '#pairings') return 'pairings';
+    return 'home';
+  };
+
+  const [page, setPage] = useState<'home' | 'admin' | 'pairings'>(getPage);
 
   useEffect(() => {
-    const onHash = () => setPage(window.location.hash === '#admin' ? 'admin' : 'home');
+    const onHash = () => setPage(getPage());
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
   if (page === 'admin') {
     return <Admin onBack={() => { window.location.hash = ''; setPage('home'); }} />;
+  }
+
+  if (page === 'pairings') {
+    return <Pairings />;
   }
 
   return (

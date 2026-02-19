@@ -8,6 +8,7 @@ const navItems: NavItem[] = [
   { label: 'Prizes', href: '#prizes' },
   { label: 'Calculator', href: '#calculator' },
   { label: 'Registration', href: '#registration' },
+  { label: 'Pairings', href: '#pairings' },
 ];
 
 const Navbar: React.FC = () => {
