@@ -6,6 +6,7 @@ import {
   startTournament,
   generateNextRound,
   enterResult,
+  resetTournament,
   TournamentStatus,
   RoundData,
 } from '../services/api';
@@ -465,6 +466,22 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     >
                       Refresh
                     </button>
+                    <button
+                      onClick={async () => {
+                        if (!confirm('Reset tournament? This will delete all rounds and pairings. Registrations are kept.')) return;
+                        setTError('');
+                        try {
+                          await resetTournament(key);
+                          setRoundData(null);
+                          fetchTournamentData();
+                        } catch (err: unknown) {
+                          setTError(err instanceof Error ? err.message : 'Failed to reset tournament.');
+                        }
+                      }}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                      Reset
+                    </button>
                     {roundData.status === 'open' && roundData.round < roundData.totalRounds && (
                       <button
                         disabled={tLoading || roundData.pairings.some(p => p.team2_id !== null && p.result === null)}
@@ -510,9 +527,11 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                           <tr key={p.id} className="border-t border-gray-800">
                             <td className="py-3 px-4 text-center text-chess-gold font-bold">{p.board_num}</td>
                             <td className="py-3 px-4">
-                              <div className="font-bold">{p.color1 === 'W' ? p.team1_name : (p.team2_name ?? '—')}</div>
+                              <div className="font-bold">
+                                {isBye ? p.team1_name : (p.color1 === 'W' ? p.team1_name : (p.team2_name ?? '—'))}
+                              </div>
                               <div className="text-gray-500 text-xs">
-                                {p.color1 === 'W' ? `${p.t1p1} / ${p.t1p2}` : `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}`}
+                                {isBye ? `${p.t1p1} / ${p.t1p2}` : (p.color1 === 'W' ? `${p.t1p1} / ${p.t1p2}` : `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}`)}
                               </div>
                             </td>
                             <td className="py-3 px-4 text-center">

@@ -120,3 +120,9 @@ export const enterResult = (adminKey: string, pairingId: number, result: string)
       body: JSON.stringify({ result }),
     }
   );
+
+export const resetTournament = (adminKey: string) =>
+  request<{ success: boolean }>(
+    `/api/tournament/reset?key=${encodeURIComponent(adminKey)}`,
+    { method: 'DELETE' }
+  );

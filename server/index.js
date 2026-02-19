@@ -355,6 +355,14 @@ app.get('/api/tournament/rounds/:n', async (req, res) => {
   });
 });
 
+// DELETE /api/tournament/reset?key=SECRET — wipe rounds + pairings, keep registrations
+app.delete('/api/tournament/reset', async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  await client.execute('DELETE FROM pairings');
+  await client.execute('DELETE FROM rounds');
+  res.json({ success: true });
+});
+
 // GET /api/tournament/standings — current standings (public)
 app.get('/api/tournament/standings', async (_req, res) => {
   const standings = await computeStandings();
