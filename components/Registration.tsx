@@ -21,6 +21,8 @@ const Registration: React.FC = () => {
     rating1: '',
     rating2: '',
     mobile: '',
+    managerName: '',
+    managerContact: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,8 +46,16 @@ const Registration: React.FC = () => {
   const isEligible = teamAverage <= MAX_AVE;
 
   const validateField = (name: string, value: string): string => {
-    if (!value.trim()) return 'This field is required';
+    const optionalFields = new Set(['managerName', 'managerContact']);
+    if (!value.trim() && !optionalFields.has(name)) return 'This field is required';
     if (name === 'mobile' && !/^(\+63|0)9\d{9}$/.test(value.replace(/\s/g, ''))) {
+      return 'Use format: 09XX XXX XXXX';
+    }
+    if (
+      name === 'managerContact' &&
+      value.trim() &&
+      !/^(\+63|0)9\d{9}$/.test(value.replace(/\s/g, ''))
+    ) {
       return 'Use format: 09XX XXX XXXX';
     }
     if (name === 'rating1' || name === 'rating2') {
@@ -94,6 +104,8 @@ const Registration: React.FC = () => {
         rating1: Number(formData.rating1) || 0,
         rating2: Number(formData.rating2) || 0,
         mobile: formData.mobile,
+        manager: formData.managerName,
+        contactNo: formData.managerContact,
       });
       setSubmitResult({ slotsRemaining: result.slotsRemaining });
     } catch (err: unknown) {
@@ -268,6 +280,48 @@ const Registration: React.FC = () => {
                     {errors.mobile && <p className="mt-1 text-xs text-red-400">{errors.mobile}</p>}
                   </label>
 
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Manager name <span className="normal-case font-normal text-slate-500">(optional)</span>
+                      </span>
+                      <div className="relative">
+                        <input
+                          id="managerName"
+                          type="text"
+                          name="managerName"
+                          value={formData.managerName}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Manager full name"
+                          className={inputClass('managerName')}
+                        />
+                        <User className={`absolute left-3 top-3.5 h-4 w-4 ${errors.managerName ? 'text-red-500' : 'text-slate-500'}`} />
+                      </div>
+                      {errors.managerName && <p className="mt-1 text-xs text-red-400">{errors.managerName}</p>}
+                    </label>
+
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Manager contact no. <span className="normal-case font-normal text-slate-500">(optional)</span>
+                      </span>
+                      <div className="relative">
+                        <input
+                          id="managerContact"
+                          type="text"
+                          name="managerContact"
+                          value={formData.managerContact}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="09XX XXX XXXX"
+                          className={inputClass('managerContact')}
+                        />
+                        <Phone className={`absolute left-3 top-3.5 h-4 w-4 ${errors.managerContact ? 'text-red-500' : 'text-slate-500'}`} />
+                      </div>
+                      {errors.managerContact && <p className="mt-1 text-xs text-red-400">{errors.managerContact}</p>}
+                    </label>
+                  </div>
+
                   {serverError && (
                     <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-900/20 p-3">
                       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
@@ -318,6 +372,8 @@ const Registration: React.FC = () => {
                         rating1: '',
                         rating2: '',
                         mobile: '',
+                        managerName: '',
+                        managerContact: '',
                       });
                     }}
                     className="mt-4 text-sm text-chess-cyan underline transition hover:text-cyan-200"

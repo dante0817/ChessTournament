@@ -41,7 +41,7 @@ app.get('/api/slots', async (_req, res) => {
 
 // POST /api/register — submit a team registration
 app.post('/api/register', async (req, res) => {
-  const { teamName, player1, player2, rating1, rating2, mobile } = req.body;
+  const { teamName, player1, player2, rating1, rating2, mobile, manager, contactNo } = req.body;
 
   if (!teamName?.trim() || !player1?.trim() || !player2?.trim() || !mobile?.trim()) {
     return res.status(400).json({ error: 'All fields are required.' });
@@ -49,6 +49,10 @@ app.post('/api/register', async (req, res) => {
 
   if (!/^(\+63|0)9\d{9}$/.test(mobile.replace(/\s/g, ''))) {
     return res.status(400).json({ error: 'Invalid mobile number. Use format: 09XX XXX XXXX.' });
+  }
+
+  if (toNullableText(contactNo) && !/^(\+63|0)9\d{9}$/.test(String(contactNo).replace(/\s/g, ''))) {
+    return res.status(400).json({ error: 'Invalid manager contact number. Use format: 09XX XXX XXXX.' });
   }
 
   const r1 = Number(rating1);
@@ -63,9 +67,18 @@ app.post('/api/register', async (req, res) => {
   }
 
   await client.execute({
-    sql: `INSERT INTO registrations (team_name, player1, player2, rating1, rating2, mobile)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-    args: [teamName.trim(), player1.trim(), player2.trim(), r1, r2, mobile.trim()],
+    sql: `INSERT INTO registrations (team_name, player1, player2, rating1, rating2, mobile, manager, contact_no)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      teamName.trim(),
+      player1.trim(),
+      player2.trim(),
+      r1,
+      r2,
+      mobile.trim(),
+      toNullableText(manager),
+      toNullableText(contactNo),
+    ],
   });
 
   const slotsRemaining = MAX_TEAMS - (registered + 1);

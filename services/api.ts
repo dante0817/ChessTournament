@@ -5,6 +5,8 @@ export interface RegistrationData {
   rating1: number;
   rating2: number;
   mobile: string;
+  manager?: string;
+  contactNo?: string;
 }
 
 export interface RegistrationResult {
