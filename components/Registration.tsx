@@ -13,6 +13,23 @@ import {
 } from 'lucide-react';
 import { submitRegistration } from '../services/api';
 
+const samplePaymentRows = [
+  {
+    datePaid: 'Feb 22, 2026 - 6:13 PM (GMT+8)',
+    teamName: 'Warlita Palma',
+    player1: 'Bren Sasot',
+    rating1: '1990',
+    player2: 'Michael Angelo Palma',
+    rating2: '1948',
+    averageRating: '1969',
+    amount: 'PHP 1,400.00',
+    paidTo: 'Dante',
+    method: 'GCash',
+    manager: 'Michael Palma',
+    contactNumber: '+639451055126',
+  },
+];
+
 const Registration: React.FC = () => {
   const [formData, setFormData] = useState({
     teamName: '',
@@ -326,6 +343,53 @@ const Registration: React.FC = () => {
                   </button>
                 </div>
               )}
+            </div>
+
+            <div className="panel p-6">
+              <div className="mb-4">
+                <h3 className="section-title text-xl text-white">Payment Record (Sample)</h3>
+                <p className="mt-1 text-sm text-slate-400">
+                  Reference format for verified registration payments.
+                </p>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-white/10">
+                <table className="w-full min-w-[1300px] text-left text-sm">
+                  <thead className="bg-slate-950/70 text-xs uppercase tracking-[0.14em] text-slate-400">
+                    <tr>
+                      <th className="px-3 py-3">Date paid</th>
+                      <th className="px-3 py-3">Team name</th>
+                      <th className="px-3 py-3">Player 1</th>
+                      <th className="px-3 py-3 text-right">Rating</th>
+                      <th className="px-3 py-3">Player 2</th>
+                      <th className="px-3 py-3 text-right">Rating</th>
+                      <th className="px-3 py-3 text-right">Ave. rating</th>
+                      <th className="px-3 py-3 text-right">Amount</th>
+                      <th className="px-3 py-3">Paid to</th>
+                      <th className="px-3 py-3">Method</th>
+                      <th className="px-3 py-3">Manager</th>
+                      <th className="px-3 py-3">Contact number</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {samplePaymentRows.map((row) => (
+                      <tr key={`${row.teamName}-${row.datePaid}`} className="border-t border-white/10 text-slate-200">
+                        <td className="whitespace-nowrap px-3 py-3">{row.datePaid}</td>
+                        <td className="whitespace-nowrap px-3 py-3 font-semibold text-white">{row.teamName}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.player1}</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-right">{row.rating1}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.player2}</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-right">{row.rating2}</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-right">{row.averageRating}</td>
+                        <td className="whitespace-nowrap px-3 py-3 text-right font-semibold text-chess-gold">{row.amount}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.paidTo}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.method}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.manager}</td>
+                        <td className="whitespace-nowrap px-3 py-3">{row.contactNumber}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
