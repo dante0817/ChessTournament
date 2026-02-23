@@ -20,6 +20,12 @@ const PORT = process.env.PORT || 3001;
 const MAX_TEAMS = 70;
 const isDev = process.env.NODE_ENV !== 'production';
 
+const toNullableText = (value) => {
+  if (value === null || value === undefined) return null;
+  const trimmed = String(value).trim();
+  return trimmed ? trimmed : null;
+};
+
 if (isDev) {
   app.use(cors({ origin: 'http://localhost:3000' }));
 } else {
@@ -86,16 +92,55 @@ app.get('/api/registrations', async (req, res) => {
 // PUT /api/registrations/:id?key=SECRET — update a registration
 app.put('/api/registrations/:id', async (req, res) => {
   if (!requireAdmin(req, res)) return;
-  const { teamName, player1, player2, rating1, rating2, mobile } = req.body;
+  const {
+    teamName,
+    player1,
+    player2,
+    rating1,
+    rating2,
+    mobile,
+    datePaid,
+    amountPaid,
+    paidTo,
+    payMethod,
+    manager,
+    contactNo,
+  } = req.body;
   const id = Number(req.params.id);
 
   if (!teamName?.trim() || !player1?.trim() || !player2?.trim() || !mobile?.trim()) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
 
+  let normalizedAmount = null;
+  if (amountPaid !== null && amountPaid !== undefined && String(amountPaid).trim() !== '') {
+    const parsedAmount = Number(amountPaid);
+    if (!Number.isFinite(parsedAmount) || parsedAmount < 0) {
+      return res.status(400).json({ error: 'amountPaid must be a valid non-negative number.' });
+    }
+    normalizedAmount = parsedAmount;
+  }
+
   const result = await client.execute({
-    sql: `UPDATE registrations SET team_name=?, player1=?, player2=?, rating1=?, rating2=?, mobile=? WHERE id=?`,
-    args: [teamName.trim(), player1.trim(), player2.trim(), Number(rating1), Number(rating2), mobile.trim(), id],
+    sql: `UPDATE registrations
+          SET team_name=?, player1=?, player2=?, rating1=?, rating2=?, mobile=?,
+              date_paid=?, amount_paid=?, paid_to=?, pay_method=?, manager=?, contact_no=?
+          WHERE id=?`,
+    args: [
+      teamName.trim(),
+      player1.trim(),
+      player2.trim(),
+      Number(rating1),
+      Number(rating2),
+      mobile.trim(),
+      toNullableText(datePaid),
+      normalizedAmount,
+      toNullableText(paidTo),
+      toNullableText(payMethod),
+      toNullableText(manager),
+      toNullableText(contactNo),
+      id,
+    ],
   });
 
   if (result.rowsAffected === 0) {

@@ -19,6 +19,12 @@ interface Registration {
   rating1: number;
   rating2: number;
   mobile: string;
+  date_paid: string | null;
+  amount_paid: number | null;
+  paid_to: string | null;
+  pay_method: string | null;
+  manager: string | null;
+  contact_no: string | null;
   created_at: string;
 }
 
@@ -38,6 +44,14 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [algorithmInput, setAlgorithmInput] = useState<'swiss' | 'roundrobin' | 'random'>('swiss');
   const [tError, setTError] = useState('');
   const [tLoading, setTLoading] = useState(false);
+
+  const formatAmount = (value: number | null | undefined) => {
+    if (value === null || value === undefined || Number.isNaN(value)) return '-';
+    return `PHP ${Number(value).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
 
   const fetchTournamentData = async () => {
     setTLoading(true);
@@ -91,6 +105,12 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       rating1: team.rating1,
       rating2: team.rating2,
       mobile: team.mobile,
+      date_paid: team.date_paid ?? '',
+      amount_paid: team.amount_paid ?? null,
+      paid_to: team.paid_to ?? '',
+      pay_method: team.pay_method ?? '',
+      manager: team.manager ?? '',
+      contact_no: team.contact_no ?? '',
     });
   };
 
@@ -112,6 +132,12 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           rating1: editData.rating1,
           rating2: editData.rating2,
           mobile: editData.mobile,
+          datePaid: editData.date_paid,
+          amountPaid: editData.amount_paid,
+          paidTo: editData.paid_to,
+          payMethod: editData.pay_method,
+          manager: editData.manager,
+          contactNo: editData.contact_no,
         }),
       });
       const data = await res.json();
@@ -139,7 +165,23 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   };
 
   const exportCSV = () => {
-    const headers = ['#', 'Team Name', 'Player 1', 'Rating 1', 'Player 2', 'Rating 2', 'Ave Rating', 'Mobile', 'Registered'];
+    const headers = [
+      '#',
+      'Team Name',
+      'Player 1',
+      'Rating 1',
+      'Player 2',
+      'Rating 2',
+      'Ave Rating',
+      'Mobile',
+      'Date Paid',
+      'Amount Paid',
+      'Paid To',
+      'Method',
+      'Manager',
+      'Contact Number',
+      'Registered',
+    ];
     const rows = teams.map((t, i) => [
       i + 1,
       `"${t.team_name}"`,
@@ -149,6 +191,12 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       t.rating2,
       ((t.rating1 + t.rating2) / 2).toFixed(1),
       `"${t.mobile}"`,
+      `"${t.date_paid ?? ''}"`,
+      t.amount_paid ?? '',
+      `"${t.paid_to ?? ''}"`,
+      `"${t.pay_method ?? ''}"`,
+      `"${t.manager ?? ''}"`,
+      `"${t.contact_no ?? ''}"`,
       `"${new Date(t.created_at).toLocaleString()}"`,
     ]);
     const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -270,126 +318,192 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         )}
 
         {activeTab === 'registrations' && (
-          <section className="panel overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1100px] text-sm">
-                <thead>
-                  <tr className="border-b border-white/10 bg-slate-950/40 text-left text-xs uppercase tracking-[0.16em] text-slate-400">
-                    <th className="px-4 py-3">#</th>
-                    <th className="px-4 py-3">Team</th>
-                    <th className="px-4 py-3">Player 1</th>
-                    <th className="px-4 py-3 text-center">R1</th>
-                    <th className="px-4 py-3">Player 2</th>
-                    <th className="px-4 py-3 text-center">R2</th>
-                    <th className="px-4 py-3 text-center">Avg</th>
-                    <th className="px-4 py-3">Mobile</th>
-                    <th className="px-4 py-3">Registered</th>
-                    <th className="px-4 py-3 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teams.map((team, i) => (
-                    <tr key={team.id} className="border-b border-white/5 hover:bg-white/[0.03]">
-                      {editingId === team.id ? (
-                        <>
-                          <td className="px-4 py-3 text-slate-500">{i + 1}</td>
-                          <td className="px-4 py-3">
-                            <input
-                              value={editData.team_name ?? ''}
-                              onChange={(e) => setEditData((d) => ({ ...d, team_name: e.target.value }))}
-                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <input
-                              value={editData.player1 ?? ''}
-                              onChange={(e) => setEditData((d) => ({ ...d, player1: e.target.value }))}
-                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <input
-                              type="number"
-                              value={editData.rating1 ?? 0}
-                              onChange={(e) => setEditData((d) => ({ ...d, rating1: Number(e.target.value) }))}
-                              className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <input
-                              value={editData.player2 ?? ''}
-                              onChange={(e) => setEditData((d) => ({ ...d, player2: e.target.value }))}
-                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <input
-                              type="number"
-                              value={editData.rating2 ?? 0}
-                              onChange={(e) => setEditData((d) => ({ ...d, rating2: Number(e.target.value) }))}
-                              className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-center font-bold text-chess-gold">
-                            {(((editData.rating1 ?? 0) + (editData.rating2 ?? 0)) / 2).toFixed(1)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <input
-                              value={editData.mobile ?? ''}
-                              onChange={(e) => setEditData((d) => ({ ...d, mobile: e.target.value }))}
-                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button onClick={() => saveEdit(team.id)} className="p-1 text-emerald-300 transition hover:text-emerald-200" title="Save">
-                                <Save className="h-4 w-4" />
-                              </button>
-                              <button onClick={cancelEdit} className="p-1 text-slate-400 transition hover:text-white" title="Cancel">
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-4 py-3 text-slate-500">{i + 1}</td>
-                          <td className="px-4 py-3 font-semibold text-white">{team.team_name}</td>
-                          <td className="px-4 py-3">{team.player1}</td>
-                          <td className="px-4 py-3 text-center text-chess-gold">{team.rating1}</td>
-                          <td className="px-4 py-3">{team.player2}</td>
-                          <td className="px-4 py-3 text-center text-chess-gold">{team.rating2}</td>
-                          <td className="px-4 py-3 text-center font-bold text-chess-gold">
-                            {((team.rating1 + team.rating2) / 2).toFixed(1)}
-                          </td>
-                          <td className="px-4 py-3 text-slate-300">{team.mobile}</td>
-                          <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button onClick={() => startEdit(team)} className="p-1 text-cyan-300 transition hover:text-cyan-200" title="Edit">
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button onClick={() => deleteTeam(team.id, team.team_name)} className="p-1 text-red-300 transition hover:text-red-200" title="Delete">
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </>
-                      )}
+          <div className="space-y-5">
+            <section className="panel overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1850px] text-sm">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-slate-950/40 text-left text-xs uppercase tracking-[0.16em] text-slate-400">
+                      <th className="px-4 py-3">#</th>
+                      <th className="px-4 py-3">Team</th>
+                      <th className="px-4 py-3">Player 1</th>
+                      <th className="px-4 py-3 text-center">R1</th>
+                      <th className="px-4 py-3">Player 2</th>
+                      <th className="px-4 py-3 text-center">R2</th>
+                      <th className="px-4 py-3 text-center">Avg</th>
+                      <th className="px-4 py-3">Mobile</th>
+                      <th className="px-4 py-3">Date paid</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                      <th className="px-4 py-3">Paid to</th>
+                      <th className="px-4 py-3">Method</th>
+                      <th className="px-4 py-3">Manager</th>
+                      <th className="px-4 py-3">Contact no.</th>
+                      <th className="px-4 py-3">Registered</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
                     </tr>
-                  ))}
-                  {teams.length === 0 && (
-                    <tr>
-                      <td colSpan={10} className="px-4 py-10 text-center text-slate-500">
-                        No registrations yet.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {teams.map((team, i) => (
+                      <tr key={team.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                        {editingId === team.id ? (
+                          <>
+                            <td className="px-4 py-3 text-slate-500">{i + 1}</td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={editData.team_name ?? ''}
+                                onChange={(e) => setEditData((d) => ({ ...d, team_name: e.target.value }))}
+                                className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={editData.player1 ?? ''}
+                                onChange={(e) => setEditData((d) => ({ ...d, player1: e.target.value }))}
+                                className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <input
+                                type="number"
+                                value={editData.rating1 ?? 0}
+                                onChange={(e) => setEditData((d) => ({ ...d, rating1: Number(e.target.value) }))}
+                                className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={editData.player2 ?? ''}
+                                onChange={(e) => setEditData((d) => ({ ...d, player2: e.target.value }))}
+                                className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <input
+                                type="number"
+                                value={editData.rating2 ?? 0}
+                                onChange={(e) => setEditData((d) => ({ ...d, rating2: Number(e.target.value) }))}
+                                className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center font-bold text-chess-gold">
+                              {(((editData.rating1 ?? 0) + (editData.rating2 ?? 0)) / 2).toFixed(1)}
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={editData.mobile ?? ''}
+                                onChange={(e) => setEditData((d) => ({ ...d, mobile: e.target.value }))}
+                                className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={String(editData.date_paid ?? '')}
+                                onChange={(e) => setEditData((d) => ({ ...d, date_paid: e.target.value }))}
+                                placeholder="Feb 22, 2026 - 6:13 PM (GMT+8)"
+                                className="w-56 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={editData.amount_paid ?? ''}
+                                onChange={(e) =>
+                                  setEditData((d) => ({
+                                    ...d,
+                                    amount_paid: e.target.value === '' ? null : Number(e.target.value),
+                                  }))
+                                }
+                                className="w-28 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-right text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={String(editData.paid_to ?? '')}
+                                onChange={(e) => setEditData((d) => ({ ...d, paid_to: e.target.value }))}
+                                className="w-32 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={String(editData.pay_method ?? '')}
+                                onChange={(e) => setEditData((d) => ({ ...d, pay_method: e.target.value }))}
+                                className="w-28 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={String(editData.manager ?? '')}
+                                onChange={(e) => setEditData((d) => ({ ...d, manager: e.target.value }))}
+                                className="w-40 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                value={String(editData.contact_no ?? '')}
+                                onChange={(e) => setEditData((d) => ({ ...d, contact_no: e.target.value }))}
+                                className="w-40 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button onClick={() => saveEdit(team.id)} className="p-1 text-emerald-300 transition hover:text-emerald-200" title="Save">
+                                  <Save className="h-4 w-4" />
+                                </button>
+                                <button onClick={cancelEdit} className="p-1 text-slate-400 transition hover:text-white" title="Cancel">
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-4 py-3 text-slate-500">{i + 1}</td>
+                            <td className="px-4 py-3 font-semibold text-white">{team.team_name}</td>
+                            <td className="px-4 py-3">{team.player1}</td>
+                            <td className="px-4 py-3 text-center text-chess-gold">{team.rating1}</td>
+                            <td className="px-4 py-3">{team.player2}</td>
+                            <td className="px-4 py-3 text-center text-chess-gold">{team.rating2}</td>
+                            <td className="px-4 py-3 text-center font-bold text-chess-gold">
+                              {((team.rating1 + team.rating2) / 2).toFixed(1)}
+                            </td>
+                            <td className="px-4 py-3 text-slate-300">{team.mobile}</td>
+                            <td className="px-4 py-3 text-slate-300">{team.date_paid || '-'}</td>
+                            <td className="px-4 py-3 text-right text-chess-gold">{formatAmount(team.amount_paid)}</td>
+                            <td className="px-4 py-3 text-slate-300">{team.paid_to || '-'}</td>
+                            <td className="px-4 py-3 text-slate-300">{team.pay_method || '-'}</td>
+                            <td className="px-4 py-3 text-slate-300">{team.manager || '-'}</td>
+                            <td className="px-4 py-3 text-slate-300">{team.contact_no || '-'}</td>
+                            <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button onClick={() => startEdit(team)} className="p-1 text-cyan-300 transition hover:text-cyan-200" title="Edit">
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                                <button onClick={() => deleteTeam(team.id, team.team_name)} className="p-1 text-red-300 transition hover:text-red-200" title="Delete">
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                    {teams.length === 0 && (
+                      <tr>
+                        <td colSpan={16} className="px-4 py-10 text-center text-slate-500">
+                          No registrations yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+          </div>
         )}
 
         {activeTab === 'tournament' && (

@@ -16,6 +16,12 @@ await client.execute(`
     rating1     INTEGER NOT NULL,
     rating2     INTEGER NOT NULL,
     mobile      TEXT    NOT NULL,
+    date_paid   TEXT,
+    amount_paid REAL,
+    paid_to     TEXT,
+    pay_method  TEXT,
+    manager     TEXT,
+    contact_no  TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
@@ -43,11 +49,29 @@ await client.execute(`
   )
 `);
 
-// Migration: add algorithm column to existing rounds tables
+// Migration: add algorithm column to existing rounds tables.
 try {
   await client.execute("ALTER TABLE rounds ADD COLUMN algorithm TEXT NOT NULL DEFAULT 'swiss'");
 } catch (_) {
-  // Column already exists — safe to ignore
+  // Column already exists; safe to ignore.
+}
+
+// Migration: add payment-related columns for existing registrations tables.
+const registrationMigrations = [
+  "ALTER TABLE registrations ADD COLUMN date_paid TEXT",
+  "ALTER TABLE registrations ADD COLUMN amount_paid REAL",
+  "ALTER TABLE registrations ADD COLUMN paid_to TEXT",
+  "ALTER TABLE registrations ADD COLUMN pay_method TEXT",
+  "ALTER TABLE registrations ADD COLUMN manager TEXT",
+  "ALTER TABLE registrations ADD COLUMN contact_no TEXT",
+];
+
+for (const sql of registrationMigrations) {
+  try {
+    await client.execute(sql);
+  } catch (_) {
+    // Column already exists; safe to ignore.
+  }
 }
 
 export const getRegistrationCount = async () => {
