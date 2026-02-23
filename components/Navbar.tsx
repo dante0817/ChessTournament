@@ -13,17 +13,29 @@ const navItems: NavItem[] = [
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 border-b border-slate-700/40 bg-chess-background/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex h-20 items-center justify-between">
           <a href="#" className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-chess-gold/30 to-chess-cyan/20 p-2.5 ring-1 ring-white/20">
-              <Trophy className="h-6 w-6 text-chess-gold" />
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-chess-gold/20 to-chess-cyan/20 p-1.5 ring-1 ring-white/20">
+              {!logoError ? (
+                <img
+                  src="/pccf-logo.png"
+                  alt="Pasay City Chess Federation Logo"
+                  className="h-full w-full rounded object-cover"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <Trophy className="h-6 w-6 text-chess-gold" />
+              )}
             </div>
             <div>
-              <p className="font-display text-lg font-bold tracking-wide text-white">PASAY CHESS FEDERATION</p>
+              <p className="font-display text-base font-bold tracking-wide text-white sm:text-lg">
+                PASAY CITY CHESS FEDERATION
+              </p>
             </div>
           </a>
 

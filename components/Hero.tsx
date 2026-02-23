@@ -23,7 +23,7 @@ const Hero: React.FC = () => {
 
   const url = typeof window !== 'undefined' ? window.location.href : '';
   const shareText =
-    'Join the Pasay Chess Federation Grudge Match 2026. Non-Master 2x2 Team Rapid.';
+    'Join the Pasay City Chess Federation Grudge Match 2026. Non-Master 2x2 Team Rapid.';
 
   useEffect(() => {
     let mounted = true;

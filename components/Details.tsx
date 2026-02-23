@@ -89,7 +89,7 @@ const Details: React.FC = () => {
             <div className="flex gap-3">
               <Info className="h-5 w-5 shrink-0 text-chess-cyan" />
               <div>
-                <p className="section-title text-base text-white">Organized by Pasay Chess Federation</p>
+                <p className="section-title text-base text-white">Organized by Pasay City Chess Federation</p>
                 <p className="mt-1 text-sm muted-text">Official event updates and pairings will be posted here.</p>
               </div>
             </div>
