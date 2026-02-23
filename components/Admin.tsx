@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Trash2, Pencil, Save, X, LogIn, Shield, ArrowLeft, Download, Swords } from 'lucide-react';
 import {
   fetchTournamentStatus,
@@ -48,6 +48,8 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       if (s.started && s.currentRound) {
         const rd = await fetchRound(s.currentRound);
         setRoundData(rd);
+      } else {
+        setRoundData(null);
       }
     } catch (err: unknown) {
       setTError(err instanceof Error ? err.message : 'Failed to load tournament data.');
@@ -149,7 +151,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       `"${t.mobile}"`,
       `"${new Date(t.created_at).toLocaleString()}"`,
     ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -159,30 +161,31 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Login screen
   if (!authenticated) {
     return (
-      <div className="min-h-screen bg-chess-dark flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="text-center mb-8">
-            <Shield className="h-12 w-12 text-chess-gold mx-auto mb-4" />
-            <h1 className="font-display text-3xl font-bold text-white">ADMIN PANEL</h1>
-            <p className="text-gray-400 mt-2 text-sm">Enter your admin key to continue</p>
+      <div className="flex min-h-screen items-center justify-center bg-chess-background px-4">
+        <div className="panel w-full max-w-md p-7">
+          <div className="mb-7 text-center">
+            <div className="inline-flex rounded-full bg-chess-gold/20 p-3">
+              <Shield className="h-7 w-7 text-chess-gold" />
+            </div>
+            <h1 className="section-title mt-3 text-3xl text-white">Admin Panel</h1>
+            <p className="mt-2 text-sm muted-text">Enter your admin key to continue.</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4">
             <input
               type="password"
               value={key}
-              onChange={e => setKey(e.target.value)}
-              placeholder="Admin Key"
-              className="w-full bg-gray-900 rounded-lg py-3 px-4 text-white placeholder-gray-600 focus:outline-none border border-gray-700 focus:border-chess-gold transition-all"
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="Admin key"
+              className="w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-white outline-none transition focus:border-chess-cyan"
               autoFocus
             />
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p className="text-sm text-red-300">{error}</p>}
             <button
               type="submit"
               disabled={loading || !key}
-              className="w-full bg-chess-gold hover:bg-yellow-400 disabled:opacity-60 text-black font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-chess-gold to-amber-500 px-4 py-3 font-bold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <LogIn className="h-4 w-4" />
               {loading ? 'Loading...' : 'Sign In'}
@@ -190,9 +193,10 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <button
               type="button"
               onClick={onBack}
-              className="w-full text-gray-400 hover:text-white text-sm flex items-center justify-center gap-1 mt-2"
+              className="flex w-full items-center justify-center gap-1 text-sm text-slate-400 transition hover:text-white"
             >
-              <ArrowLeft className="h-4 w-4" /> Back to site
+              <ArrowLeft className="h-4 w-4" />
+              Back to site
             </button>
           </form>
         </div>
@@ -200,232 +204,239 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     );
   }
 
-  // Admin dashboard
   return (
-    <div className="min-h-screen bg-chess-dark text-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+    <div className="min-h-screen bg-chess-background text-slate-100">
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold">
-              <span className="text-chess-gold">ADMIN</span>
-            </h1>
-            <button onClick={onBack} className="text-gray-400 hover:text-white text-sm flex items-center gap-1 mt-1">
-              <ArrowLeft className="h-3 w-3" /> Back to site
+            <h1 className="section-title text-3xl font-bold text-white">Tournament Admin</h1>
+            <button onClick={onBack} className="mt-1 inline-flex items-center gap-1 text-sm text-slate-400 transition hover:text-white">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to site
             </button>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2">
             {activeTab === 'registrations' && (
               <>
                 <button
                   onClick={exportCSV}
-                  className="bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-all"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
                 >
-                  <Download className="h-4 w-4" /> Export CSV
+                  <Download className="h-4 w-4" />
+                  Export CSV
                 </button>
                 <button
                   onClick={() => fetchTeams(key)}
-                  className="bg-chess-gold hover:bg-yellow-400 text-black text-sm font-bold py-2 px-4 rounded-lg transition-all"
+                  className="rounded-lg bg-gradient-to-r from-chess-gold to-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:brightness-110"
                 >
                   Refresh
                 </button>
               </>
             )}
           </div>
-        </div>
+        </header>
 
-        {/* Tab bar */}
-        <div className="flex gap-2 border-b border-gray-700 mb-6">
+        <div className="mb-6 flex gap-2 border-b border-white/10 pb-2">
           <button
             onClick={() => setActiveTab('registrations')}
-            className={`px-4 py-2 font-bold font-display text-sm transition-colors border-b-2 ${
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
               activeTab === 'registrations'
-                ? 'border-chess-gold text-chess-gold'
-                : 'border-transparent text-gray-400 hover:text-white'
+                ? 'bg-chess-gold text-slate-950'
+                : 'text-slate-300 hover:bg-white/10 hover:text-white'
             }`}
           >
-            REGISTRATIONS ({total})
+            Registrations ({total})
           </button>
           <button
-            onClick={() => { setActiveTab('tournament'); fetchTournamentData(); }}
-            className={`px-4 py-2 font-bold font-display text-sm transition-colors border-b-2 flex items-center gap-1 ${
+            onClick={() => {
+              setActiveTab('tournament');
+              fetchTournamentData();
+            }}
+            className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
               activeTab === 'tournament'
-                ? 'border-chess-gold text-chess-gold'
-                : 'border-transparent text-gray-400 hover:text-white'
+                ? 'bg-chess-gold text-slate-950'
+                : 'text-slate-300 hover:bg-white/10 hover:text-white'
             }`}
           >
-            <Swords className="h-4 w-4" /> TOURNAMENT
+            <Swords className="h-4 w-4" />
+            Tournament
           </button>
         </div>
 
         {error && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-6">
-            <p className="text-red-400 text-sm">{error}</p>
+          <div className="mb-5 rounded-xl border border-red-500/40 bg-red-900/20 p-3 text-sm text-red-300">
+            {error}
           </div>
         )}
 
-        {/* Registrations table */}
-        {activeTab === 'registrations' && <div className="overflow-x-auto rounded-xl border border-gray-700">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
-                <th className="py-3 px-4 text-left">#</th>
-                <th className="py-3 px-4 text-left">Team Name</th>
-                <th className="py-3 px-4 text-left">Player 1</th>
-                <th className="py-3 px-4 text-center">R1</th>
-                <th className="py-3 px-4 text-left">Player 2</th>
-                <th className="py-3 px-4 text-center">R2</th>
-                <th className="py-3 px-4 text-center">Ave</th>
-                <th className="py-3 px-4 text-left">Mobile</th>
-                <th className="py-3 px-4 text-left">Registered</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teams.map((team, i) => (
-                <tr key={team.id} className="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
-                  {editingId === team.id ? (
-                    <>
-                      <td className="py-3 px-4 text-gray-500">{i + 1}</td>
-                      <td className="py-3 px-4">
-                        <input
-                          value={editData.team_name ?? ''}
-                          onChange={e => setEditData(d => ({ ...d, team_name: e.target.value }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full text-white focus:border-chess-gold focus:outline-none"
-                        />
+        {activeTab === 'registrations' && (
+          <section className="panel overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1100px] text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 bg-slate-950/40 text-left text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3">#</th>
+                    <th className="px-4 py-3">Team</th>
+                    <th className="px-4 py-3">Player 1</th>
+                    <th className="px-4 py-3 text-center">R1</th>
+                    <th className="px-4 py-3">Player 2</th>
+                    <th className="px-4 py-3 text-center">R2</th>
+                    <th className="px-4 py-3 text-center">Avg</th>
+                    <th className="px-4 py-3">Mobile</th>
+                    <th className="px-4 py-3">Registered</th>
+                    <th className="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teams.map((team, i) => (
+                    <tr key={team.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                      {editingId === team.id ? (
+                        <>
+                          <td className="px-4 py-3 text-slate-500">{i + 1}</td>
+                          <td className="px-4 py-3">
+                            <input
+                              value={editData.team_name ?? ''}
+                              onChange={(e) => setEditData((d) => ({ ...d, team_name: e.target.value }))}
+                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              value={editData.player1 ?? ''}
+                              onChange={(e) => setEditData((d) => ({ ...d, player1: e.target.value }))}
+                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              value={editData.rating1 ?? 0}
+                              onChange={(e) => setEditData((d) => ({ ...d, rating1: Number(e.target.value) }))}
+                              className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              value={editData.player2 ?? ''}
+                              onChange={(e) => setEditData((d) => ({ ...d, player2: e.target.value }))}
+                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              value={editData.rating2 ?? 0}
+                              onChange={(e) => setEditData((d) => ({ ...d, rating2: Number(e.target.value) }))}
+                              className="w-20 rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-center text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-center font-bold text-chess-gold">
+                            {(((editData.rating1 ?? 0) + (editData.rating2 ?? 0)) / 2).toFixed(1)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              value={editData.mobile ?? ''}
+                              onChange={(e) => setEditData((d) => ({ ...d, mobile: e.target.value }))}
+                              className="w-full rounded border border-white/15 bg-slate-950/60 px-2 py-1.5 text-white outline-none focus:border-chess-cyan"
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button onClick={() => saveEdit(team.id)} className="p-1 text-emerald-300 transition hover:text-emerald-200" title="Save">
+                                <Save className="h-4 w-4" />
+                              </button>
+                              <button onClick={cancelEdit} className="p-1 text-slate-400 transition hover:text-white" title="Cancel">
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-4 py-3 text-slate-500">{i + 1}</td>
+                          <td className="px-4 py-3 font-semibold text-white">{team.team_name}</td>
+                          <td className="px-4 py-3">{team.player1}</td>
+                          <td className="px-4 py-3 text-center text-chess-gold">{team.rating1}</td>
+                          <td className="px-4 py-3">{team.player2}</td>
+                          <td className="px-4 py-3 text-center text-chess-gold">{team.rating2}</td>
+                          <td className="px-4 py-3 text-center font-bold text-chess-gold">
+                            {((team.rating1 + team.rating2) / 2).toFixed(1)}
+                          </td>
+                          <td className="px-4 py-3 text-slate-300">{team.mobile}</td>
+                          <td className="px-4 py-3 text-xs text-slate-500">{new Date(team.created_at).toLocaleDateString()}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button onClick={() => startEdit(team)} className="p-1 text-cyan-300 transition hover:text-cyan-200" title="Edit">
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button onClick={() => deleteTeam(team.id, team.team_name)} className="p-1 text-red-300 transition hover:text-red-200" title="Delete">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                  {teams.length === 0 && (
+                    <tr>
+                      <td colSpan={10} className="px-4 py-10 text-center text-slate-500">
+                        No registrations yet.
                       </td>
-                      <td className="py-3 px-4">
-                        <input
-                          value={editData.player1 ?? ''}
-                          onChange={e => setEditData(d => ({ ...d, player1: e.target.value }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full text-white focus:border-chess-gold focus:outline-none"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          value={editData.rating1 ?? 0}
-                          onChange={e => setEditData(d => ({ ...d, rating1: Number(e.target.value) }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-16 text-center text-white focus:border-chess-gold focus:outline-none"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          value={editData.player2 ?? ''}
-                          onChange={e => setEditData(d => ({ ...d, player2: e.target.value }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full text-white focus:border-chess-gold focus:outline-none"
-                        />
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          value={editData.rating2 ?? 0}
-                          onChange={e => setEditData(d => ({ ...d, rating2: Number(e.target.value) }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-16 text-center text-white focus:border-chess-gold focus:outline-none"
-                        />
-                      </td>
-                      <td className="py-3 px-4 text-center text-yellow-400 font-bold">
-                        {(((editData.rating1 ?? 0) + (editData.rating2 ?? 0)) / 2).toFixed(1)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <input
-                          value={editData.mobile ?? ''}
-                          onChange={e => setEditData(d => ({ ...d, mobile: e.target.value }))}
-                          className="bg-gray-900 border border-gray-600 rounded px-2 py-1 w-full text-white focus:border-chess-gold focus:outline-none"
-                        />
-                      </td>
-                      <td className="py-3 px-4 text-gray-500 text-xs">
-                        {new Date(team.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => saveEdit(team.id)} className="text-green-400 hover:text-green-300 p-1" title="Save">
-                            <Save className="h-4 w-4" />
-                          </button>
-                          <button onClick={cancelEdit} className="text-gray-400 hover:text-white p-1" title="Cancel">
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="py-3 px-4 text-gray-500">{i + 1}</td>
-                      <td className="py-3 px-4 font-bold">{team.team_name}</td>
-                      <td className="py-3 px-4">{team.player1}</td>
-                      <td className="py-3 px-4 text-center text-chess-gold">{team.rating1}</td>
-                      <td className="py-3 px-4">{team.player2}</td>
-                      <td className="py-3 px-4 text-center text-chess-gold">{team.rating2}</td>
-                      <td className="py-3 px-4 text-center text-yellow-400 font-bold">{((team.rating1 + team.rating2) / 2).toFixed(1)}</td>
-                      <td className="py-3 px-4 text-gray-400">{team.mobile}</td>
-                      <td className="py-3 px-4 text-gray-500 text-xs">
-                        {new Date(team.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => startEdit(team)} className="text-blue-400 hover:text-blue-300 p-1" title="Edit">
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button onClick={() => deleteTeam(team.id, team.team_name)} className="text-red-400 hover:text-red-300 p-1" title="Delete">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </>
+                    </tr>
                   )}
-                </tr>
-              ))}
-              {teams.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="py-12 text-center text-gray-500">No registrations yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
-        {/* Tournament tab */}
         {activeTab === 'tournament' && (
-          <div className="space-y-6">
+          <section className="space-y-5">
             {tError && (
-              <div className="bg-red-900/20 border border-red-800 rounded-lg p-3">
-                <p className="text-red-400 text-sm">{tError}</p>
+              <div className="rounded-xl border border-red-500/40 bg-red-900/20 p-3 text-sm text-red-300">
+                {tError}
               </div>
             )}
 
-            {/* Start tournament */}
             {!tournamentStatus?.started && (
-              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
-                <h2 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  <Swords className="h-5 w-5 text-chess-gold" /> START TOURNAMENT
+              <article className="panel p-6">
+                <h2 className="section-title mb-4 flex items-center gap-2 text-xl text-white">
+                  <Swords className="h-5 w-5 text-chess-gold" />
+                  Start Tournament
                 </h2>
                 <div className="flex flex-wrap items-end gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Pairing Algorithm</label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                      Pairing algorithm
+                    </span>
                     <select
                       value={algorithmInput}
-                      onChange={e => setAlgorithmInput(e.target.value as typeof algorithmInput)}
-                      className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white focus:border-chess-gold focus:outline-none"
+                      onChange={(e) => setAlgorithmInput(e.target.value as typeof algorithmInput)}
+                      className="rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-white outline-none focus:border-chess-cyan"
                     >
                       <option value="swiss">Swiss (Dutch)</option>
                       <option value="roundrobin">Round Robin</option>
                       <option value="random">Random</option>
                     </select>
-                  </div>
+                  </label>
                   {algorithmInput !== 'roundrobin' ? (
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Total Rounds</label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        Total rounds
+                      </span>
                       <input
-                        type="number" min="1" max="20"
+                        type="number"
+                        min="1"
+                        max="20"
                         value={totalRoundsInput}
-                        onChange={e => setTotalRoundsInput(e.target.value)}
-                        className="bg-gray-900 border border-gray-700 rounded-lg py-2 px-4 text-white w-24 focus:border-chess-gold focus:outline-none"
+                        onChange={(e) => setTotalRoundsInput(e.target.value)}
+                        className="w-24 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-white outline-none focus:border-chess-cyan"
                       />
-                    </div>
+                    </label>
                   ) : (
-                    <p className="text-xs text-gray-400 pb-2">
-                      Rounds auto-calculated from team count
-                    </p>
+                    <p className="pb-2 text-xs text-slate-400">Rounds auto-calculated from team count.</p>
                   )}
                   <button
                     disabled={tLoading}
@@ -438,37 +449,34 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                         setTError(err instanceof Error ? err.message : 'Failed to start tournament.');
                       }
                     }}
-                    className="bg-chess-gold hover:bg-yellow-400 disabled:opacity-60 text-black font-bold py-2 px-6 rounded-lg transition-all"
+                    className="rounded-lg bg-gradient-to-r from-chess-gold to-amber-500 px-5 py-2 text-sm font-bold text-slate-950 transition hover:brightness-110 disabled:opacity-60"
                   >
-                    {tLoading ? 'Starting…' : 'Generate Round 1'}
+                    {tLoading ? 'Starting...' : 'Generate Round 1'}
                   </button>
                 </div>
-              </div>
+              </article>
             )}
 
-            {/* Current round result entry */}
             {tournamentStatus?.started && roundData && (
-              <div className="bg-gray-800/50 rounded-xl border border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-xl font-bold text-white flex items-center gap-2 flex-wrap">
+              <article className="panel p-6">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="section-title flex flex-wrap items-center gap-2 text-xl text-white">
                     <Swords className="h-5 w-5 text-chess-gold" />
-                    ROUND {roundData.round} / {roundData.totalRounds}
-                    {tournamentStatus?.algorithm && (
-                      <span className="text-xs font-normal text-gray-400 bg-gray-700 px-2 py-0.5 rounded">
-                        {{swiss:'Swiss', roundrobin:'Round Robin', random:'Random'}[tournamentStatus.algorithm] ?? tournamentStatus.algorithm}
+                    Round {roundData.round} / {roundData.totalRounds}
+                    {tournamentStatus.algorithm && (
+                      <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-normal text-slate-300">
+                        {({ swiss: 'Swiss', roundrobin: 'Round Robin', random: 'Random' }[tournamentStatus.algorithm] ??
+                          tournamentStatus.algorithm)}
                       </span>
                     )}
                   </h2>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => fetchTournamentData()}
-                      className="text-gray-400 hover:text-white text-sm"
-                    >
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={fetchTournamentData} className="rounded-lg border border-white/10 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-white/10">
                       Refresh
                     </button>
                     <button
                       onClick={async () => {
-                        if (!confirm('Reset tournament? This will delete all rounds and pairings. Registrations are kept.')) return;
+                        if (!confirm('Reset tournament? This deletes all rounds and pairings. Registrations are kept.')) return;
                         setTError('');
                         try {
                           await resetTournament(key);
@@ -479,13 +487,13 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                           setTError(err instanceof Error ? err.message : 'Failed to reset tournament.');
                         }
                       }}
-                      className="text-red-400 hover:text-red-300 text-sm"
+                      className="rounded-lg border border-red-500/40 px-3 py-1.5 text-sm text-red-300 transition hover:bg-red-500/10"
                     >
                       Reset
                     </button>
                     {roundData.status === 'open' && roundData.round < roundData.totalRounds && (
                       <button
-                        disabled={tLoading || roundData.pairings.some(p => p.team2_id !== null && p.result === null)}
+                        disabled={tLoading || roundData.pairings.some((p) => p.team2_id !== null && p.result === null)}
                         onClick={async () => {
                           setTError('');
                           try {
@@ -495,7 +503,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                             setTError(err instanceof Error ? err.message : 'Failed to generate next round.');
                           }
                         }}
-                        className="bg-chess-gold hover:bg-yellow-400 disabled:opacity-40 disabled:cursor-not-allowed text-black font-bold py-1.5 px-4 rounded-lg text-sm transition-all"
+                        className="rounded-lg bg-gradient-to-r from-chess-gold to-amber-500 px-3 py-1.5 text-sm font-bold text-slate-950 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
                         title="All results must be entered first"
                       >
                         Generate Round {roundData.round + 1}
@@ -505,43 +513,47 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
 
                 {(() => {
-                  const pending = roundData.pairings.filter(p => p.team2_id !== null && p.result === null).length;
+                  const pending = roundData.pairings.filter((p) => p.team2_id !== null && p.result === null).length;
                   return pending > 0 ? (
-                    <p className="text-yellow-400 text-xs mb-3">{pending} result(s) still pending</p>
+                    <p className="mb-3 text-xs font-semibold text-amber-300">{pending} result(s) pending</p>
                   ) : null;
                 })()}
 
-                <div className="overflow-x-auto rounded-xl border border-gray-700">
-                  <table className="w-full text-sm">
+                <div className="overflow-x-auto rounded-xl border border-white/10">
+                  <table className="w-full min-w-[760px] text-sm">
                     <thead>
-                      <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
-                        <th className="py-3 px-4 text-center">Board</th>
-                        <th className="py-3 px-4 text-left">White</th>
-                        <th className="py-3 px-4 text-center">Result</th>
-                        <th className="py-3 px-4 text-left">Black</th>
+                      <tr className="border-b border-white/10 bg-slate-950/40 text-xs uppercase tracking-[0.16em] text-slate-400">
+                        <th className="px-4 py-3 text-center">Board</th>
+                        <th className="px-4 py-3 text-left">White</th>
+                        <th className="px-4 py-3 text-center">Result</th>
+                        <th className="px-4 py-3 text-left">Black</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {roundData.pairings.map(p => {
+                      {roundData.pairings.map((p) => {
                         const isBye = p.team2_id === null;
                         return (
-                          <tr key={p.id} className="border-t border-gray-800">
-                            <td className="py-3 px-4 text-center text-chess-gold font-bold">{p.board_num}</td>
-                            <td className="py-3 px-4">
-                              <div className="font-bold">
-                                {isBye ? p.team1_name : (p.color1 === 'W' ? p.team1_name : (p.team2_name ?? '—'))}
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                {isBye ? `${p.t1p1} / ${p.t1p2}` : (p.color1 === 'W' ? `${p.t1p1} / ${p.t1p2}` : `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}`)}
-                              </div>
+                          <tr key={p.id} className="border-b border-white/5">
+                            <td className="px-4 py-3 text-center font-bold text-chess-gold">{p.board_num}</td>
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-white">
+                                {isBye ? p.team1_name : p.color1 === 'W' ? p.team1_name : p.team2_name ?? '-'}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {isBye
+                                  ? `${p.t1p1} / ${p.t1p2}`
+                                  : p.color1 === 'W'
+                                  ? `${p.t1p1} / ${p.t1p2}`
+                                  : `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}`}
+                              </p>
                             </td>
-                            <td className="py-3 px-4 text-center">
+                            <td className="px-4 py-3 text-center">
                               {isBye ? (
-                                <span className="text-yellow-400 text-xs font-bold">BYE</span>
+                                <span className="text-xs font-bold uppercase tracking-wider text-chess-gold">Bye</span>
                               ) : (
                                 <select
                                   value={p.result ?? ''}
-                                  onChange={async e => {
+                                  onChange={async (e) => {
                                     const val = e.target.value;
                                     if (!val) return;
                                     setTError('');
@@ -552,26 +564,28 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                                       setTError(err instanceof Error ? err.message : 'Failed to save result.');
                                     }
                                   }}
-                                  className={`bg-gray-900 border rounded px-2 py-1 text-sm focus:outline-none ${
-                                    p.result ? 'border-green-700 text-green-400' : 'border-gray-600 text-gray-400'
+                                  className={`rounded border px-2 py-1 text-sm outline-none ${
+                                    p.result
+                                      ? 'border-emerald-500/40 bg-emerald-900/20 text-emerald-300'
+                                      : 'border-white/20 bg-slate-950/60 text-slate-300'
                                   }`}
                                 >
-                                  <option value="">— select —</option>
+                                  <option value="">Select</option>
                                   <option value="1-0">1-0</option>
-                                  <option value="1/2-1/2">½-½</option>
+                                  <option value="1/2-1/2">1/2-1/2</option>
                                   <option value="0-1">0-1</option>
                                 </select>
                               )}
                             </td>
-                            <td className="py-3 px-4">
+                            <td className="px-4 py-3">
                               {isBye ? (
-                                <span className="text-gray-600 italic text-sm">— bye —</span>
+                                <span className="text-sm italic text-slate-500">No opponent</span>
                               ) : (
                                 <>
-                                  <div className="font-bold">{p.color1 === 'W' ? (p.team2_name ?? '—') : p.team1_name}</div>
-                                  <div className="text-gray-500 text-xs">
+                                  <p className="font-semibold text-white">{p.color1 === 'W' ? p.team2_name ?? '-' : p.team1_name}</p>
+                                  <p className="text-xs text-slate-500">
                                     {p.color1 === 'W' ? `${p.t2p1 ?? ''} / ${p.t2p2 ?? ''}` : `${p.t1p1} / ${p.t1p2}`}
-                                  </div>
+                                  </p>
                                 </>
                               )}
                             </td>
@@ -581,11 +595,10 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </article>
             )}
-          </div>
+          </section>
         )}
-
       </div>
     </div>
   );

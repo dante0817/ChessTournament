@@ -34,7 +34,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-chess-dark text-white font-sans selection:bg-chess-red selection:text-white">
+    <div className="min-h-screen bg-chess-background text-slate-100 font-sans noise-overlay">
       <Navbar />
       <main>
         <Hero />

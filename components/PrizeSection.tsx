@@ -3,85 +3,79 @@ import { Medal, Trophy, Award } from 'lucide-react';
 import { Prize, SpecialPrize } from '../types';
 
 const mainPrizes: Prize[] = [
-  { rank: 'CHAMPION', amount: '15,000', icon: 'trophy' },
-  { rank: '2ND PLACE', amount: '10,000', icon: 'medal' },
-  { rank: '3RD PLACE', amount: '7,000', icon: 'medal' },
-  { rank: '4TH PLACE', amount: '5,000' },
-  { rank: '5TH PLACE', amount: '3,000' },
-  { rank: '6TH PLACE', amount: '2,000' },
+  { rank: 'Champion', amount: '15,000' },
+  { rank: '2nd Place', amount: '10,000' },
+  { rank: '3rd Place', amount: '7,000' },
+  { rank: '4th Place', amount: '5,000' },
+  { rank: '5th Place', amount: '3,000' },
+  { rank: '6th Place', amount: '2,000' },
 ];
 
 const specialPrizes: SpecialPrize[] = [
-  { title: 'TOP COLLEGE', amount: '1,500' },
-  { title: 'TOP 1900', amount: '1,500' },
-  { title: 'TOP 1850', amount: '1,500' },
-  { title: 'CONSOLATION', amount: '1,500' },
-  { title: 'TOP BOARD 1', amount: '1,000' },
-  { title: 'TOP BOARD 2', amount: '1,000' },
+  { title: 'Top College', amount: '1,500' },
+  { title: 'Top 1900', amount: '1,500' },
+  { title: 'Top 1850', amount: '1,500' },
+  { title: 'Consolation', amount: '1,500' },
+  { title: 'Top Board 1', amount: '1,000' },
+  { title: 'Top Board 2', amount: '1,000' },
 ];
 
 const PrizeSection: React.FC = () => {
   return (
-    <section id="prizes" className="py-20 bg-chess-charcoal relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">
-            TOURNAMENT <span className="text-chess-gold">PRIZES</span>
-          </h2>
-          <div className="w-24 h-1 bg-chess-red mx-auto rounded"></div>
+    <section id="prizes" className="py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-chess-cyan">Payouts</p>
+          <h2 className="section-title text-4xl font-bold text-white">Tournament Prizes</h2>
+          <p className="mt-3 text-sm muted-text">Cash prizes are listed in PHP amounts.</p>
         </div>
 
-        {/* Main Prizes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {/* 2nd Place */}
-          <div className="bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-8 text-center transform md:translate-y-4 hover:border-chess-gold transition-colors duration-300">
-            <Medal className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="font-display text-2xl text-gray-300 mb-2">2ND PLACE</h3>
-            <p className="font-display text-4xl font-bold text-white tracking-tight">₱10,000</p>
-          </div>
+        <div className="mb-8 grid gap-5 md:grid-cols-3">
+          <article className="panel order-2 p-6 text-center md:order-1">
+            <Medal className="mx-auto h-12 w-12 text-slate-300" />
+            <h3 className="mt-3 section-title text-2xl text-slate-100">{mainPrizes[1].rank}</h3>
+            <p className="mt-2 text-4xl font-bold text-white">PHP {mainPrizes[1].amount}</p>
+          </article>
 
-          {/* Champion */}
-          <div className="bg-gradient-to-b from-chess-gold/10 to-chess-gold/5 border border-chess-gold rounded-xl p-8 text-center transform md:-translate-y-4 shadow-[0_0_30px_rgba(242,201,76,0.15)] relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-2">
-                <div className="bg-chess-red text-white text-xs font-bold px-2 py-1 rounded">GRAND PRIZE</div>
-             </div>
-            <Trophy className="h-20 w-20 text-chess-gold mx-auto mb-4" />
-            <h3 className="font-display text-3xl text-chess-gold mb-2">CHAMPION</h3>
-            <p className="font-display text-5xl font-bold text-white tracking-tight">₱15,000</p>
-          </div>
-
-          {/* 3rd Place */}
-          <div className="bg-gradient-to-b from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-8 text-center transform md:translate-y-4 hover:border-chess-gold transition-colors duration-300">
-            <Medal className="h-16 w-16 text-amber-700 mx-auto mb-4" />
-            <h3 className="font-display text-2xl text-amber-700 mb-2">3RD PLACE</h3>
-            <p className="font-display text-4xl font-bold text-white tracking-tight">₱7,000</p>
-          </div>
-        </div>
-
-        {/* Lower Main Prizes */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-16 max-w-4xl mx-auto">
-          {mainPrizes.slice(3).map((prize) => (
-            <div key={prize.rank} className="bg-gray-800/50 p-6 rounded-lg text-center border border-gray-700">
-              <h4 className="font-display text-xl text-gray-400">{prize.rank}</h4>
-              <p className="font-display text-2xl font-bold text-white">₱{prize.amount}</p>
+          <article className="panel order-1 border-chess-gold/50 bg-gradient-to-b from-chess-gold/15 to-transparent p-6 text-center shadow-glow md:order-2 md:-translate-y-3">
+            <div className="inline-flex rounded-full border border-chess-gold/40 bg-chess-gold/20 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-chess-gold">
+              Grand Prize
             </div>
+            <Trophy className="mx-auto mt-4 h-16 w-16 text-chess-gold" />
+            <h3 className="mt-3 section-title text-3xl text-chess-gold">{mainPrizes[0].rank}</h3>
+            <p className="mt-2 text-5xl font-bold text-white">PHP {mainPrizes[0].amount}</p>
+          </article>
+
+          <article className="panel order-3 p-6 text-center">
+            <Medal className="mx-auto h-12 w-12 text-amber-600" />
+            <h3 className="mt-3 section-title text-2xl text-amber-400">{mainPrizes[2].rank}</h3>
+            <p className="mt-2 text-4xl font-bold text-white">PHP {mainPrizes[2].amount}</p>
+          </article>
+        </div>
+
+        <div className="mx-auto mb-12 grid max-w-4xl gap-4 sm:grid-cols-3">
+          {mainPrizes.slice(3).map((prize) => (
+            <article key={prize.rank} className="panel p-5 text-center">
+              <p className="section-title text-lg text-slate-300">{prize.rank}</p>
+              <p className="mt-1 text-2xl font-bold text-white">PHP {prize.amount}</p>
+            </article>
           ))}
         </div>
 
-        {/* Special Prizes */}
-        <div className="max-w-5xl mx-auto">
-          <h3 className="font-display text-2xl text-center text-white mb-8 border-b border-gray-800 pb-4">
-            SPECIAL CATEGORY AWARDS
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="panel p-6">
+          <h3 className="section-title text-2xl text-white">Special Category Awards</h3>
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
             {specialPrizes.map((prize) => (
-              <div key={prize.title} className="flex items-center justify-between bg-chess-dark p-4 rounded border border-gray-800 hover:border-chess-red/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Award className="h-5 w-5 text-chess-red" />
-                  <span className="font-display font-medium text-gray-300 text-sm md:text-base">{prize.title}</span>
+              <article
+                key={prize.title}
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-950/40 px-4 py-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-chess-cyan" />
+                  <span className="font-semibold text-slate-200">{prize.title}</span>
                 </div>
-                <span className="font-display font-bold text-chess-gold">₱{prize.amount}</span>
-              </div>
+                <span className="font-bold text-chess-gold">PHP {prize.amount}</span>
+              </article>
             ))}
           </div>
         </div>

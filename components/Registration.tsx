@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { CreditCard, Phone, AlertCircle, Mail, ArrowDown, User, Users, Send, CheckCircle, Star, MessageCircle } from 'lucide-react';
+import {
+  Phone,
+  AlertCircle,
+  Mail,
+  ArrowDown,
+  User,
+  Users,
+  Send,
+  CheckCircle,
+  Star,
+  MessageCircle,
+} from 'lucide-react';
 import { submitRegistration } from '../services/api';
 
 const Registration: React.FC = () => {
@@ -22,7 +33,7 @@ const Registration: React.FC = () => {
 
   const normalizeRating = (val: string): number => {
     const n = Number(val);
-    if (!val.trim() || isNaN(n) || n <= 0) return RATING_FLOOR;
+    if (!val.trim() || Number.isNaN(n) || n <= 0) return RATING_FLOOR;
     return n < RATING_FLOOR ? RATING_FLOOR : n;
   };
 
@@ -37,18 +48,18 @@ const Registration: React.FC = () => {
     if (name === 'mobile' && !/^(\+63|0)9\d{9}$/.test(value.replace(/\s/g, ''))) {
       return 'Use format: 09XX XXX XXXX';
     }
-    if ((name === 'rating1' || name === 'rating2')) {
+    if (name === 'rating1' || name === 'rating2') {
       const n = Number(value);
-      if (isNaN(n) || n < 0) return 'Enter a rating or 0 for unrated';
+      if (Number.isNaN(n) || n < 0) return 'Enter a rating or 0 for unrated';
     }
     return '';
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const next = { ...prev };
         delete next[name];
         return next;
@@ -59,7 +70,7 @@ const Registration: React.FC = () => {
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
-    if (error) setErrors(prev => ({ ...prev, [name]: error }));
+    if (error) setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,7 +78,7 @@ const Registration: React.FC = () => {
     setServerError('');
 
     const newErrors: Record<string, string> = {};
-    (Object.keys(formData) as (keyof typeof formData)[]).forEach(key => {
+    (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
     });
@@ -93,191 +104,197 @@ const Registration: React.FC = () => {
   };
 
   const inputClass = (field: string) =>
-    `w-full bg-gray-900 rounded-lg py-3 px-4 pl-10 text-white placeholder-gray-600 focus:outline-none transition-all border ${
-      errors[field] ? 'border-red-500 focus:border-red-500' : 'border-gray-700 focus:border-chess-gold'
+    `w-full rounded-xl border bg-slate-950/60 py-3 pl-10 pr-4 text-white outline-none transition ${
+      errors[field]
+        ? 'border-red-500 focus:border-red-500'
+        : 'border-white/10 focus:border-chess-cyan'
     }`;
 
   return (
-    <section id="registration" className="py-20 bg-chess-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-
-          <div className="space-y-8">
+    <section id="registration" className="py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid items-start gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-6">
             <div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-                REGISTRATION <br /> <span className="text-chess-gold">PROCEDURE</span>
-              </h2>
-              <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-                Slots are limited to <span className="text-chess-red font-bold">70 TEAMS ONLY</span>.
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-chess-cyan">Sign Up</p>
+              <h2 className="section-title text-4xl font-bold text-white">Registration Procedure</h2>
+              <p className="mt-3 text-lg muted-text">
+                Slots are limited to <span className="font-bold text-chess-red">70 teams only</span>.
               </p>
             </div>
 
-            {/* Fees Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white rounded-lg p-4 shadow-lg border-l-4 border-blue-500 text-gray-900">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-display font-bold text-lg text-blue-600">ONLINE</span>
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">Save ₱100</span>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <article className="panel border-blue-400/30 bg-blue-600/10 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="section-title text-lg text-blue-200">Online</p>
+                  <span className="rounded-full bg-blue-300/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-100">
+                    Save PHP 100
+                  </span>
                 </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display text-3xl font-bold text-gray-900">₱1,400</span>
-                </div>
-                <p className="text-red-600 text-xs font-bold mt-1">Until March 6 Only</p>
-              </div>
-
-              <div className="bg-gray-800 rounded-lg p-4 border-l-4 border-gray-600 opacity-80">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-display font-bold text-lg text-white">ONSITE</span>
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display text-3xl font-bold text-white">₱1,500</span>
-                </div>
-                <p className="text-gray-500 text-xs mt-1">Subject to availability</p>
-              </div>
+                <p className="mt-3 text-3xl font-bold text-white">PHP 1,400</p>
+                <p className="mt-1 text-xs text-blue-100/80">Until March 6 only</p>
+              </article>
+              <article className="panel p-4">
+                <p className="section-title text-lg text-slate-200">Onsite</p>
+                <p className="mt-3 text-3xl font-bold text-white">PHP 1,500</p>
+                <p className="mt-1 text-xs text-slate-400">Subject to availability</p>
+              </article>
             </div>
 
-            {/* Registration Form */}
-            <div className="bg-chess-charcoal p-6 rounded-xl border border-gray-700 shadow-xl">
-              <h3 className="font-display text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className="panel p-6">
+              <h3 className="section-title mb-4 flex items-center gap-2 text-xl text-white">
                 <Users className="h-5 w-5 text-chess-gold" />
-                PRE-REGISTER TEAM
+                Pre-register Team
               </h3>
 
               {!submitResult ? (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Team Name */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1" htmlFor="teamName">Team Name *</label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">Team name</span>
                     <div className="relative">
                       <input
-                        id="teamName" type="text" name="teamName"
-                        value={formData.teamName} onChange={handleChange} onBlur={handleBlur}
-                        placeholder="Enter Team Name"
-                        aria-label="Team Name Input" aria-required="true"
+                        id="teamName"
+                        type="text"
+                        name="teamName"
+                        value={formData.teamName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Enter team name"
                         className={inputClass('teamName')}
+                        aria-required="true"
                       />
-                      <Users className={`absolute left-3 top-3.5 h-4 w-4 ${errors.teamName ? 'text-red-500' : 'text-gray-500'}`} />
+                      <Users className={`absolute left-3 top-3.5 h-4 w-4 ${errors.teamName ? 'text-red-500' : 'text-slate-500'}`} />
                     </div>
-                    {errors.teamName && <p className="text-red-500 text-xs mt-1 ml-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {errors.teamName}</p>}
-                  </div>
+                    {errors.teamName && <p className="mt-1 text-xs text-red-400">{errors.teamName}</p>}
+                  </label>
 
-                  {/* Players */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {(['player1', 'player2'] as const).map((field, i) => (
-                      <div key={field}>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1" htmlFor={field}>Player {i + 1} *</label>
+                      <label key={field} className="block">
+                        <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Player {i + 1}
+                        </span>
                         <div className="relative">
                           <input
-                            id={field} type="text" name={field}
-                            value={formData[field]} onChange={handleChange} onBlur={handleBlur}
-                            placeholder="Full Name"
-                            aria-label={`Player ${i + 1} Name`} aria-required="true"
+                            id={field}
+                            type="text"
+                            name={field}
+                            value={formData[field]}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            placeholder="Full name"
                             className={inputClass(field)}
+                            aria-required="true"
                           />
-                          <User className={`absolute left-3 top-3.5 h-4 w-4 ${errors[field] ? 'text-red-500' : 'text-gray-500'}`} />
+                          <User className={`absolute left-3 top-3.5 h-4 w-4 ${errors[field] ? 'text-red-500' : 'text-slate-500'}`} />
                         </div>
-                        {errors[field] && <p className="text-red-500 text-xs mt-1 ml-1">{errors[field]}</p>}
-                      </div>
+                        {errors[field] && <p className="mt-1 text-xs text-red-400">{errors[field]}</p>}
+                      </label>
                     ))}
                   </div>
 
-                  {/* Ratings */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {(['rating1', 'rating2'] as const).map((field, i) => (
-                      <div key={field}>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1" htmlFor={field}>
-                          Player {i + 1} Rating <span className="text-gray-600 normal-case font-normal">(0 = unrated)</span>
-                        </label>
+                      <label key={field} className="block">
+                        <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Player {i + 1} rating
+                          <span className="ml-1 normal-case font-normal text-slate-500">(0 = unrated)</span>
+                        </span>
                         <div className="relative">
                           <input
-                            id={field} type="number" name={field}
-                            value={formData[field]} onChange={handleChange} onBlur={handleBlur}
+                            id={field}
+                            type="number"
+                            name={field}
+                            value={formData[field]}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="e.g. 1750"
-                            min="0" max="3000"
-                            aria-label={`Player ${i + 1} Rating`} aria-required="true"
+                            min="0"
+                            max="3000"
                             className={inputClass(field)}
+                            aria-required="true"
                           />
-                          <Star className={`absolute left-3 top-3.5 h-4 w-4 ${errors[field] ? 'text-red-500' : 'text-gray-500'}`} />
+                          <Star className={`absolute left-3 top-3.5 h-4 w-4 ${errors[field] ? 'text-red-500' : 'text-slate-500'}`} />
                         </div>
-                        {errors[field] && <p className="text-red-500 text-xs mt-1 ml-1">{errors[field]}</p>}
-                      </div>
+                        {errors[field] && <p className="mt-1 text-xs text-red-400">{errors[field]}</p>}
+                      </label>
                     ))}
                   </div>
 
-                  {/* Team Average Eligibility */}
                   {bothRatingsEntered && (
-                    <div className={`rounded-lg p-4 border ${isEligible ? 'bg-green-900/20 border-green-700' : 'bg-red-900/20 border-red-700'}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Team Average Rating</span>
-                        {isEligible
-                          ? <CheckCircle className="h-5 w-5 text-green-400" />
-                          : <AlertCircle className="h-5 w-5 text-red-400" />
-                        }
+                    <div className={`rounded-xl border p-4 ${isEligible ? 'border-emerald-500/40 bg-emerald-900/20' : 'border-red-500/40 bg-red-900/20'}`}>
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Team average rating</span>
+                        {isEligible ? (
+                          <CheckCircle className="h-5 w-5 text-emerald-300" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 text-red-300" />
+                        )}
                       </div>
-                      <div className="flex items-baseline gap-3">
-                        <span className={`font-display text-3xl font-bold ${isEligible ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`text-3xl font-bold ${isEligible ? 'text-emerald-300' : 'text-red-300'}`}>
                           {teamAverage.toFixed(1)}
                         </span>
-                        <span className="text-gray-500 text-sm">/ {MAX_AVE} max</span>
+                        <span className="text-sm text-slate-500">/ {MAX_AVE} max</span>
                       </div>
-                      <div className="mt-2 flex gap-4 text-xs text-gray-500">
-                        <span>P1: {norm1} {Number(formData.rating1) < RATING_FLOOR ? '(floor applied)' : ''}</span>
-                        <span>P2: {norm2} {Number(formData.rating2) < RATING_FLOOR ? '(floor applied)' : ''}</span>
+                      <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400">
+                        <span>P1: {norm1} {Number(formData.rating1) < RATING_FLOOR ? '(floor)' : ''}</span>
+                        <span>P2: {norm2} {Number(formData.rating2) < RATING_FLOOR ? '(floor)' : ''}</span>
                       </div>
                       {!isEligible && (
-                        <p className="text-red-400 text-xs mt-2 font-bold">
-                          Team average exceeds {MAX_AVE}. This team is not eligible to register.
+                        <p className="mt-2 text-xs font-semibold text-red-300">
+                          Team average exceeds {MAX_AVE}. This team is not eligible.
                         </p>
                       )}
                     </div>
                   )}
 
-                  {/* Mobile */}
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1" htmlFor="mobile">Contact Number *</label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-400">Contact number</span>
                     <div className="relative">
                       <input
-                        id="mobile" type="text" name="mobile"
-                        value={formData.mobile} onChange={handleChange} onBlur={handleBlur}
+                        id="mobile"
+                        type="text"
+                        name="mobile"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
                         placeholder="09XX XXX XXXX"
-                        aria-label="Contact Number" aria-required="true"
                         className={inputClass('mobile')}
+                        aria-required="true"
                       />
-                      <Phone className={`absolute left-3 top-3.5 h-4 w-4 ${errors.mobile ? 'text-red-500' : 'text-gray-500'}`} />
+                      <Phone className={`absolute left-3 top-3.5 h-4 w-4 ${errors.mobile ? 'text-red-500' : 'text-slate-500'}`} />
                     </div>
-                    {errors.mobile && <p className="text-red-500 text-xs mt-1 ml-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {errors.mobile}</p>}
-                  </div>
+                    {errors.mobile && <p className="mt-1 text-xs text-red-400">{errors.mobile}</p>}
+                  </label>
 
                   {serverError && (
-                    <div className="flex items-start gap-2 bg-red-900/20 border border-red-800 rounded-lg p-3">
-                      <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                      <p className="text-red-400 text-sm">{serverError}</p>
+                    <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-900/20 p-3">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                      <p className="text-sm text-red-300">{serverError}</p>
                     </div>
                   )}
 
                   <button
                     type="submit"
                     disabled={isSubmitting || (bothRatingsEntered && !isEligible)}
-                    className="w-full bg-chess-gold hover:bg-yellow-400 disabled:opacity-60 disabled:cursor-not-allowed text-black font-bold py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-chess-gold to-amber-500 px-4 py-3 font-bold text-slate-900 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Send className="h-4 w-4" />
-                    {isSubmitting ? 'SUBMITTING…' : 'SUBMIT PRE-REGISTRATION'}
+                    {isSubmitting ? 'SUBMITTING...' : 'SUBMIT PRE-REGISTRATION'}
                   </button>
                 </form>
               ) : (
-                <div className="bg-green-900/20 border border-green-800 rounded-lg p-6 text-center">
-                  <div className="inline-flex p-3 bg-green-900/30 rounded-full mb-3">
-                    <CheckCircle className="h-8 w-8 text-green-500" />
+                <div className="rounded-xl border border-emerald-500/40 bg-emerald-900/20 p-6 text-center">
+                  <div className="inline-flex rounded-full bg-emerald-900/30 p-3">
+                    <CheckCircle className="h-8 w-8 text-emerald-300" />
                   </div>
-                  <h4 className="text-xl font-bold text-white mb-2">Registration Submitted!</h4>
-                  <p className="text-gray-300 text-sm mb-1">
-                    Please proceed to payment via GCash to secure your slot.
-                  </p>
-                  <p className="text-gray-300 text-sm mb-4">
-                    Send your receipt to the number provided.
+                  <h4 className="section-title mt-3 text-xl text-white">Registration submitted</h4>
+                  <p className="mt-2 text-sm text-slate-300">
+                    Proceed with payment and send your receipt to secure your slot.
                   </p>
                   {submitResult.slotsRemaining > 0 && (
-                    <p className="text-chess-gold text-sm font-bold mb-4">
+                    <p className="mt-3 text-sm font-bold text-chess-gold">
                       {submitResult.slotsRemaining} slot{submitResult.slotsRemaining !== 1 ? 's' : ''} remaining
                     </p>
                   )}
@@ -285,18 +302,25 @@ const Registration: React.FC = () => {
                     href="FB_GC_INVITE_LINK_HERE"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-all text-sm mb-4"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-500"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    Join the Tournament GC
+                    Join tournament GC
                   </a>
-                  <p className="text-gray-500 text-xs mb-4">Join for updates, pairings & announcements</p>
+                  <p className="mt-2 text-xs text-slate-500">Join for updates, pairings, and announcements.</p>
                   <button
                     onClick={() => {
                       setSubmitResult(null);
-                      setFormData({ teamName: '', player1: '', player2: '', rating1: '', rating2: '', mobile: '' });
+                      setFormData({
+                        teamName: '',
+                        player1: '',
+                        player2: '',
+                        rating1: '',
+                        rating2: '',
+                        mobile: '',
+                      });
                     }}
-                    className="text-chess-gold text-sm underline hover:text-white"
+                    className="mt-4 text-sm text-chess-cyan underline transition hover:text-cyan-200"
                   >
                     Register another team
                   </button>
@@ -305,60 +329,53 @@ const Registration: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column — Payment */}
-          <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-8 md:p-10 rounded-2xl shadow-2xl text-center border border-blue-700 relative overflow-hidden sticky top-24">
-            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
+          <aside className="panel sticky top-24 overflow-hidden p-6 sm:p-8">
+            <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-chess-cyan/20 blur-3xl" />
 
-            <h3 className="font-display text-2xl font-bold text-white mb-8">PAYMENT CHANNEL</h3>
+            <h3 className="section-title relative z-10 text-2xl text-white">Payment Channel</h3>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-8 border border-white/20">
-              {/* InstaPay QR Code */}
-              <div className="flex justify-center mb-4">
-                <img
-                  src="/instapay-qr.png"
-                  alt="InstaPay QR Code"
-                  className="w-48 h-48 rounded-lg object-contain bg-white p-1"
-                />
+            <div className="relative z-10 mt-6 rounded-xl border border-white/15 bg-white/5 p-5 text-center">
+              <img
+                src="/instapay-qr.png"
+                alt="InstaPay QR code"
+                className="mx-auto h-48 w-48 rounded-lg bg-white p-1 object-contain"
+              />
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-blue-200">Or pay via GCash</p>
+              <div className="mt-3 flex items-center justify-center gap-2">
+                <Phone className="h-4 w-4 text-blue-200" />
+                <p className="section-title text-3xl font-bold text-white">0956 358 9090</p>
               </div>
-              <p className="text-blue-300 text-xs font-bold tracking-widest uppercase mb-4">Or pay via GCash number</p>
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <div className="bg-blue-600 p-2 rounded-full">
-                  <Phone className="h-5 w-5 text-white" />
-                </div>
-                <p className="font-display text-3xl md:text-4xl font-bold text-white tracking-widest">0956 358 9090</p>
-              </div>
-              <p className="font-display text-lg text-blue-200">DANTE SONEJA</p>
+              <p className="mt-1 text-sm text-blue-100">DANTE SONEJA</p>
             </div>
 
-            <p className="text-blue-200 text-sm mb-6">
-              After payment, please message the transaction receipt to the number above along with your Team Name and Player Names.
+            <p className="relative z-10 mt-5 text-sm text-slate-300">
+              Send your payment receipt with team name and player names to the contact number above.
             </p>
 
-            <div className="mb-6">
+            <div className="relative z-10 mt-6">
               <a
                 href="#inquiries"
-                className="inline-flex items-center gap-2 px-5 py-2 bg-blue-700/50 hover:bg-blue-700 text-white rounded-full border border-blue-500/50 transition-all text-sm font-medium group"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-slate-100 transition hover:bg-white/10"
               >
-                <span>Contact Organizers for Inquiries</span>
-                <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+                Contact organizers
+                <ArrowDown className="h-4 w-4" />
               </a>
             </div>
 
-            <div id="inquiries" className="pt-6 border-t border-blue-700/50 scroll-mt-24">
-              <p className="text-blue-300 text-xs font-bold uppercase tracking-widest mb-4">For Inquiries</p>
-              <div className="flex flex-col gap-3 justify-center items-center">
-                <div className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors">
-                  <Phone className="h-4 w-4 text-blue-400" />
-                  <span>0956 358 9090</span>
-                </div>
-                <div className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors">
-                  <Mail className="h-4 w-4 text-blue-400" />
-                  <span>pasaychessfederation@gmail.com</span>
-                </div>
+            <div id="inquiries" className="relative z-10 mt-6 border-t border-white/10 pt-5">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">For inquiries</p>
+              <div className="mt-3 space-y-2 text-sm text-slate-200">
+                <p className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-chess-cyan" />
+                  0956 358 9090
+                </p>
+                <p className="flex items-center gap-2 break-all">
+                  <Mail className="h-4 w-4 text-chess-cyan" />
+                  pasaychessfederation@gmail.com
+                </p>
               </div>
             </div>
-          </div>
-
+          </aside>
         </div>
       </div>
     </section>

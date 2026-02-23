@@ -23,11 +23,13 @@ const Pairings: React.FC = () => {
     try {
       const s = await fetchTournamentStatus();
       setStatus(s);
-      if (!s.started) { setLoading(false); return; }
+      if (!s.started) {
+        setLoading(false);
+        return;
+      }
 
       const r = round ?? s.currentRound ?? 1;
       setSelectedRound(r);
-
       const [rd, st] = await Promise.all([fetchRound(r), fetchStandings()]);
       setRoundData(rd);
       setStandings(st.standings);
@@ -38,9 +40,10 @@ const Pairings: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => loadData(selectedRound), 30_000);
     return () => clearInterval(interval);
@@ -52,28 +55,30 @@ const Pairings: React.FC = () => {
   };
 
   const resultBadge = (result: string | null, isBye: boolean) => {
-    if (isBye) return <span className="text-yellow-400 font-bold text-xs">BYE</span>;
-    if (!result) return <span className="text-gray-500 text-xs">—</span>;
-    const color = result === '1-0' ? 'text-green-400' : result === '0-1' ? 'text-red-400' : 'text-yellow-300';
-    return <span className={`font-bold text-sm ${color}`}>{result}</span>;
+    if (isBye) return <span className="text-xs font-bold uppercase tracking-wider text-chess-gold">Bye</span>;
+    if (!result) return <span className="text-xs text-slate-500">Pending</span>;
+    const color =
+      result === '1-0' ? 'text-emerald-300' : result === '0-1' ? 'text-red-300' : 'text-chess-gold';
+    return <span className={`text-sm font-bold ${color}`}>{result}</span>;
   };
 
   if (loading && !status) {
     return (
-      <div className="min-h-screen bg-chess-dark flex items-center justify-center">
-        <p className="text-gray-400 animate-pulse">Loading tournament data…</p>
+      <div className="flex min-h-screen items-center justify-center bg-chess-background">
+        <p className="text-sm text-slate-400">Loading tournament data...</p>
       </div>
     );
   }
 
   if (!status?.started) {
     return (
-      <div className="min-h-screen bg-chess-dark flex flex-col items-center justify-center gap-4 text-center px-4">
-        <Trophy className="h-16 w-16 text-chess-gold" />
-        <h1 className="font-display text-3xl font-bold text-white">Tournament Not Started</h1>
-        <p className="text-gray-400 max-w-sm">
-          Pairings will appear here once the tournament director generates them.
-          Check back on tournament day!
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-chess-background px-4 text-center">
+        <div className="rounded-full border border-white/10 bg-white/5 p-5">
+          <Trophy className="h-10 w-10 text-chess-gold" />
+        </div>
+        <h1 className="section-title text-3xl font-bold text-white">Tournament Not Started</h1>
+        <p className="max-w-md text-sm muted-text">
+          Pairings and standings will appear here after the tournament director generates round 1.
         </p>
       </div>
     );
@@ -83,90 +88,104 @@ const Pairings: React.FC = () => {
   const roundTabs = Array.from({ length: status.currentRound ?? 1 }, (_, i) => i + 1);
 
   return (
-    <div className="min-h-screen bg-chess-dark text-white pb-16">
-      {/* Header */}
-      <div className="border-b border-chess-gold/20 bg-chess-dark/95 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="font-display text-xl font-bold">
-            <span className="text-chess-gold">PAIRINGS</span>
-            <span className="text-gray-400 text-sm ml-2 font-normal">
-              Round {status.currentRound} of {totalRounds}
-            </span>
-          </h1>
+    <div className="min-h-screen bg-chess-background pb-12 text-slate-100">
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-chess-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+          <div>
+            <a href="#" className="text-xs uppercase tracking-[0.18em] text-slate-400 transition hover:text-white">
+              Back to event
+            </a>
+            <h1 className="section-title text-xl font-bold text-white">
+              Public Pairings
+              <span className="ml-2 text-sm font-normal text-slate-400">
+                Round {status.currentRound} of {totalRounds}
+              </span>
+            </h1>
+          </div>
           <button
             onClick={() => loadData(selectedRound)}
-            className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
-        {/* Round tabs */}
-        <div className="max-w-5xl mx-auto px-4 pb-3 flex gap-2 overflow-x-auto">
-          {roundTabs.map(n => (
+        <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
+          {roundTabs.map((n) => (
             <button
               key={n}
               onClick={() => handleRoundChange(n)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-bold font-display shrink-0 transition-all ${
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
                 selectedRound === n
-                  ? 'bg-chess-gold text-black'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                  ? 'bg-chess-gold text-slate-950'
+                  : 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
               }`}
             >
-              R{n}
+              Round {n}
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+      <main className="mx-auto max-w-6xl space-y-8 px-4 py-6">
+        {error && (
+          <div className="rounded-xl border border-red-500/40 bg-red-900/20 p-3 text-sm text-red-300">
+            {error}
+          </div>
+        )}
 
-        {/* Pairings table */}
         {roundData && (
-          <div>
-            <h2 className="font-display text-lg font-bold text-chess-gold mb-3">
-              ROUND {roundData.round} PAIRINGS
+          <section className="panel overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+              <h2 className="section-title text-lg text-white">Round {roundData.round} Pairings</h2>
               {roundData.status === 'done' && (
-                <span className="ml-2 text-xs text-green-400 font-normal normal-case">✓ Complete</span>
+                <span className="rounded-full bg-emerald-400/20 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+                  Complete
+                </span>
               )}
-            </h2>
-            <div className="overflow-x-auto rounded-xl border border-gray-700">
-              <table className="w-full text-sm">
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead>
-                  <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
-                    <th className="py-3 px-4 text-center w-12">Board</th>
-                    <th className="py-3 px-4 text-left">White</th>
-                    <th className="py-3 px-4 text-center w-20">Result</th>
-                    <th className="py-3 px-4 text-left">Black</th>
+                  <tr className="border-b border-white/10 bg-slate-950/50 text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3 text-center">Board</th>
+                    <th className="px-4 py-3 text-left">White</th>
+                    <th className="px-4 py-3 text-center">Result</th>
+                    <th className="px-4 py-3 text-left">Black</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {roundData.pairings.map(p => {
+                  {roundData.pairings.map((p) => {
                     const isBye = p.team2_id === null;
-                    const whiteTeam = p.color1 === 'W'
-                      ? { name: p.team1_name, p1: p.t1p1, p2: p.t1p2 }
-                      : { name: p.team2_name ?? '', p1: p.t2p1 ?? '', p2: p.t2p2 ?? '' };
-                    const blackTeam = p.color1 === 'W'
-                      ? { name: p.team2_name ?? 'BYE', p1: p.t2p1 ?? '', p2: p.t2p2 ?? '' }
-                      : { name: p.team1_name, p1: p.t1p1, p2: p.t1p2 };
+                    const whiteTeam =
+                      p.color1 === 'W'
+                        ? { name: p.team1_name, p1: p.t1p1, p2: p.t1p2 }
+                        : { name: p.team2_name ?? '', p1: p.t2p1 ?? '', p2: p.t2p2 ?? '' };
+                    const blackTeam =
+                      p.color1 === 'W'
+                        ? { name: p.team2_name ?? 'BYE', p1: p.t2p1 ?? '', p2: p.t2p2 ?? '' }
+                        : { name: p.team1_name, p1: p.t1p1, p2: p.t1p2 };
                     return (
-                      <tr key={p.id} className="border-t border-gray-800 hover:bg-gray-800/40 transition-colors">
-                        <td className="py-3 px-4 text-center text-chess-gold font-bold font-display">{p.board_num}</td>
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-white">{isBye ? p.team1_name : whiteTeam.name}</div>
-                          {!isBye && <div className="text-gray-500 text-xs">{whiteTeam.p1} / {whiteTeam.p2}</div>}
+                      <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                        <td className="px-4 py-3 text-center font-bold text-chess-gold">{p.board_num}</td>
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-white">{isBye ? p.team1_name : whiteTeam.name}</p>
+                          {!isBye && (
+                            <p className="text-xs text-slate-500">
+                              {whiteTeam.p1} / {whiteTeam.p2}
+                            </p>
+                          )}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          {resultBadge(p.result, isBye)}
-                        </td>
-                        <td className="py-3 px-4">
+                        <td className="px-4 py-3 text-center">{resultBadge(p.result, isBye)}</td>
+                        <td className="px-4 py-3">
                           {isBye ? (
-                            <span className="text-gray-600 italic text-sm">— bye —</span>
+                            <span className="text-sm italic text-slate-500">No opponent</span>
                           ) : (
                             <>
-                              <div className="font-bold text-white">{blackTeam.name}</div>
-                              <div className="text-gray-500 text-xs">{blackTeam.p1} / {blackTeam.p2}</div>
+                              <p className="font-semibold text-white">{blackTeam.name}</p>
+                              <p className="text-xs text-slate-500">
+                                {blackTeam.p1} / {blackTeam.p2}
+                              </p>
                             </>
                           )}
                         </td>
@@ -176,36 +195,38 @@ const Pairings: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Standings table */}
         {standings.length > 0 && (
-          <div>
-            <h2 className="font-display text-lg font-bold text-chess-gold mb-3 flex items-center gap-2">
-              <Users className="h-5 w-5" /> STANDINGS
-            </h2>
-            <div className="overflow-x-auto rounded-xl border border-gray-700">
-              <table className="w-full text-sm">
+          <section className="panel overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-white/10 px-5 py-4">
+              <Users className="h-5 w-5 text-chess-cyan" />
+              <h2 className="section-title text-lg text-white">Standings</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead>
-                  <tr className="bg-gray-800 text-gray-400 uppercase text-xs tracking-wider">
-                    <th className="py-3 px-4 text-center w-12">#</th>
-                    <th className="py-3 px-4 text-left">Team</th>
-                    <th className="py-3 px-4 text-left">Players</th>
-                    <th className="py-3 px-4 text-center">Ave Rtg</th>
-                    <th className="py-3 px-4 text-center">Score</th>
+                  <tr className="border-b border-white/10 bg-slate-950/50 text-xs uppercase tracking-[0.16em] text-slate-400">
+                    <th className="px-4 py-3 text-center">#</th>
+                    <th className="px-4 py-3 text-left">Team</th>
+                    <th className="px-4 py-3 text-left">Players</th>
+                    <th className="px-4 py-3 text-center">Avg</th>
+                    <th className="px-4 py-3 text-center">Score</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {standings.map(s => (
-                    <tr key={s.id} className="border-t border-gray-800 hover:bg-gray-800/40 transition-colors">
-                      <td className="py-3 px-4 text-center text-gray-500 font-bold">{s.rank}</td>
-                      <td className="py-3 px-4 font-bold text-white">{s.team_name}</td>
-                      <td className="py-3 px-4 text-gray-400 text-xs">{s.player1} / {s.player2}</td>
-                      <td className="py-3 px-4 text-center text-chess-gold">
+                  {standings.map((s) => (
+                    <tr key={s.id} className="border-b border-white/5 hover:bg-white/[0.03]">
+                      <td className="px-4 py-3 text-center text-slate-500">{s.rank}</td>
+                      <td className="px-4 py-3 font-semibold text-white">{s.team_name}</td>
+                      <td className="px-4 py-3 text-xs text-slate-400">
+                        {s.player1} / {s.player2}
+                      </td>
+                      <td className="px-4 py-3 text-center text-chess-gold">
                         {((s.rating1 + s.rating2) / 2).toFixed(0)}
                       </td>
-                      <td className="py-3 px-4 text-center font-bold font-display text-white text-lg">
+                      <td className="px-4 py-3 text-center text-lg font-bold text-white">
                         {s.score % 1 === 0 ? s.score : s.score.toFixed(1)}
                       </td>
                     </tr>
@@ -213,9 +234,9 @@ const Pairings: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   );
 };

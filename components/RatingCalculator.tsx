@@ -7,13 +7,12 @@ const RatingCalculator: React.FC = () => {
   const [average, setAverage] = useState<number>(0);
   const [eligible, setEligible] = useState<boolean>(true);
 
-  // Helper to normalize rating (apply the 1800 floor rule)
   const normalizeRating = (ratingStr: string | number): number => {
     if (ratingStr === '') return 0;
-    const r = Number(ratingStr);
-    if (isNaN(r)) return 1800; // Treat invalid/unrated as 1800 based on "Unrated considered 1800"
-    if (r < 1800) return 1800; // 1799 Below considered 1800
-    return r;
+    const rating = Number(ratingStr);
+    if (Number.isNaN(rating)) return 1800;
+    if (rating < 1800) return 1800;
+    return rating;
   };
 
   useEffect(() => {
@@ -21,8 +20,8 @@ const RatingCalculator: React.FC = () => {
     const r2 = normalizeRating(player2);
 
     if (player1 === '' && player2 === '') {
-        setAverage(0);
-        return;
+      setAverage(0);
+      return;
     }
 
     const avg = (r1 + r2) / 2;
@@ -31,64 +30,79 @@ const RatingCalculator: React.FC = () => {
   }, [player1, player2]);
 
   return (
-    <section id="calculator" className="py-20 bg-chess-charcoal border-y border-gray-800">
-      <div className="max-w-3xl mx-auto px-4">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center p-3 bg-chess-gold/10 rounded-full mb-4">
-            <Calculator className="h-8 w-8 text-chess-gold" />
+    <section id="calculator" className="py-24">
+      <div className="mx-auto max-w-3xl px-4">
+        <div className="panel p-7 sm:p-9">
+          <div className="text-center">
+            <div className="inline-flex rounded-full bg-chess-cyan/15 p-3">
+              <Calculator className="h-7 w-7 text-chess-cyan" />
+            </div>
+            <h2 className="section-title mt-4 text-3xl font-bold text-white">Team Rating Checker</h2>
+            <p className="mt-2 text-sm muted-text">
+              Enter both ratings to verify if your team is eligible (max average: 1975).
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Ratings below 1800 are automatically treated as 1800.
+            </p>
           </div>
-          <h2 className="font-display text-3xl font-bold text-white">TEAM RATING <span className="text-chess-gold">CHECKER</span></h2>
-          <p className="text-gray-400 mt-2">Enter ratings to check if your team qualifies (Max Avg: 1975)</p>
-          <p className="text-xs text-gray-500 mt-1">Note: Ratings below 1800 automatically calculated as 1800.</p>
-        </div>
 
-        <div className="bg-chess-dark p-8 rounded-xl border border-gray-700 shadow-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Player 1 Rating</label>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Player 1 rating
+              </span>
               <input
                 type="number"
                 value={player1}
                 onChange={(e) => setPlayer1(e.target.value)}
                 placeholder="e.g. 1950"
-                className="w-full bg-gray-800 border border-gray-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-chess-gold focus:ring-1 focus:ring-chess-gold transition-colors"
+                className="w-full rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 text-white outline-none transition focus:border-chess-cyan"
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                Calc Value: {normalizeRating(player1)}
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Player 2 Rating</label>
+              <span className="mt-1 block text-right text-xs text-slate-500">
+                Calc value: {normalizeRating(player1)}
+              </span>
+            </label>
+
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                Player 2 rating
+              </span>
               <input
                 type="number"
                 value={player2}
                 onChange={(e) => setPlayer2(e.target.value)}
                 placeholder="e.g. 1800"
-                className="w-full bg-gray-800 border border-gray-600 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-chess-gold focus:ring-1 focus:ring-chess-gold transition-colors"
+                className="w-full rounded-xl border border-white/10 bg-slate-950/50 px-4 py-3 text-white outline-none transition focus:border-chess-cyan"
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">
-                Calc Value: {normalizeRating(player2)}
-              </div>
-            </div>
+              <span className="mt-1 block text-right text-xs text-slate-500">
+                Calc value: {normalizeRating(player2)}
+              </span>
+            </label>
           </div>
 
-          <div className={`p-6 rounded-lg border flex items-center justify-between ${eligible ? 'bg-green-900/20 border-green-800' : 'bg-red-900/20 border-red-800'}`}>
+          <div
+            className={`mt-7 flex items-center justify-between rounded-xl border p-5 ${
+              eligible ? 'border-emerald-600/40 bg-emerald-900/20' : 'border-red-600/40 bg-red-900/20'
+            }`}
+          >
             <div>
-              <p className="text-sm text-gray-400 uppercase tracking-wider">Team Average</p>
-              <p className={`font-display text-4xl font-bold ${eligible ? 'text-green-400' : 'text-red-400'}`}>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team average</p>
+              <p className={`mt-1 text-4xl font-bold ${eligible ? 'text-emerald-300' : 'text-red-300'}`}>
                 {average > 0 ? average.toFixed(1) : '--'}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {average > 0 && (
-                <>
-                    <span className={`font-display text-xl font-bold ${eligible ? 'text-green-400' : 'text-red-400'}`}>
-                        {eligible ? 'QUALIFIED' : 'TOO HIGH'}
-                    </span>
-                    {eligible ? <CheckCircle className="h-10 w-10 text-green-500" /> : <XCircle className="h-10 w-10 text-red-500" />}
-                </>
-              )}
-            </div>
+            {average > 0 && (
+              <div className="flex items-center gap-3">
+                <p className={`text-lg font-bold uppercase ${eligible ? 'text-emerald-300' : 'text-red-300'}`}>
+                  {eligible ? 'Qualified' : 'Too High'}
+                </p>
+                {eligible ? (
+                  <CheckCircle className="h-9 w-9 text-emerald-300" />
+                ) : (
+                  <XCircle className="h-9 w-9 text-red-300" />
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

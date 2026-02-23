@@ -4,37 +4,45 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://lucide.dev/icons/crown.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pasay Grudge Match 2026</title>
+    <title>Pasay Chess Tour 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Roboto', 'sans-serif'],
-              display: ['Oswald', 'sans-serif'],
+              sans: ['Space Grotesk', 'sans-serif'],
+              display: ['Outfit', 'sans-serif'],
             },
             colors: {
               chess: {
-                red: '#D92525',
-                gold: '#F2C94C',
-                dark: '#1A1A1A',
-                charcoal: '#2C2C2C',
+                background: '#070B14',
+                surface: '#10192A',
+                card: '#172338',
+                red: '#EF4444',
+                gold: '#F59E0B',
+                cyan: '#22D3EE',
               }
+            },
+            boxShadow: {
+              glow: '0 20px 60px rgba(34, 211, 238, 0.18)',
+            },
+            keyframes: {
+              'fade-rise': {
+                '0%': { opacity: '0', transform: 'translateY(18px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            },
+            animation: {
+              'fade-rise': 'fade-rise 700ms ease forwards',
             }
           }
         }
       }
     </script>
-    <style>
-      body {
-        background-color: #111;
-        color: #eee;
-      }
-    </style>
   <script type="importmap">
 {
   "imports": {
@@ -45,7 +53,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
