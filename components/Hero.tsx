@@ -65,7 +65,7 @@ const Hero: React.FC = () => {
           <h1 className="section-title text-5xl font-bold leading-[1.02] text-white sm:text-6xl lg:text-7xl">
             Grudge Match
             <span className="block bg-gradient-to-r from-chess-gold via-amber-400 to-orange-500 bg-clip-text text-transparent">
-              Tournament Tour
+              Federation Championship
             </span>
           </h1>
 

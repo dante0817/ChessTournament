@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
               <Trophy className="h-6 w-6 text-chess-gold" />
             </div>
             <div>
-              <p className="font-display text-lg font-bold tracking-wide text-white">PASAY CHESS TOUR</p>
+              <p className="font-display text-lg font-bold tracking-wide text-white">PASAY CHESS FEDERATION</p>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Grudge Match 2026</p>
             </div>
           </a>
