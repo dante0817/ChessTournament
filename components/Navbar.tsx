@@ -24,7 +24,6 @@ const Navbar: React.FC = () => {
             </div>
             <div>
               <p className="font-display text-lg font-bold tracking-wide text-white">PASAY CHESS FEDERATION</p>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Grudge Match 2026</p>
             </div>
           </a>
 
